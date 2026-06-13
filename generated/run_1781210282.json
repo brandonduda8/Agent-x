@@ -1,0 +1,43 @@
+{
+  "payload": {
+    "topic": "Ad creatives that convert for performance marketers",
+    "audience": "performance marketers",
+    "variation": "launch campaign",
+    "tags": [
+      "performance_marketers",
+      "launch_campaign"
+    ]
+  },
+  "twin": {
+    "ok": true,
+    "summary": "Content blueprint for \"Ad creatives that convert for performance marketers\" produced.",
+    "artifacts": [
+      "/data/data/com.termux/files/home/agent-x/digital-twin/artifacts/undefined-content-draft.json"
+    ]
+  },
+  "delivery": {
+    "ok": true,
+    "received": {
+      "source": "agent-x-auto-publish",
+      "ts": "2026-06-11T20:38:02Z",
+      "payload": {
+        "topic": "Ad creatives that convert for performance marketers",
+        "audience": "performance marketers",
+        "variation": "launch campaign",
+        "tags": [
+          "performance_marketers",
+          "launch_campaign"
+        ]
+      },
+      "twin": {
+        "ok": true,
+        "summary": "Content blueprint for \"Ad creatives that convert for performance marketers\" produced.",
+        "artifacts": [
+          "/data/data/com.termux/files/home/agent-x/digital-twin/artifacts/undefined-content-draft.json"
+        ]
+      }
+    },
+    "checkout_url": "http://localhost:3002/checkout/unknown-product",
+    "timestamp": "2026-06-11T20:38:02.540Z"
+  }
+}

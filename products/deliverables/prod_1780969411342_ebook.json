@@ -1,0 +1,20 @@
+{
+  "productId": "prod_1780969411342_ebook",
+  "generatedAt": "2026-06-09T01:43:31.342346+00:00",
+  "content": {
+    "title": "Lean Startup Growth Engine",
+    "type": "ebook",
+    "sections": [
+      "Introduction",
+      "Core Concepts",
+      "Step-by-Step Instructions",
+      "Case Studies",
+      "Action Checklist"
+    ],
+    "items": 0,
+    "templates": 0,
+    "wordCount": 2500
+  },
+  "license": "personal-use",
+  "watermark": false
+}

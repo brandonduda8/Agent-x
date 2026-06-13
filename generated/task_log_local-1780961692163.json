@@ -1,0 +1,51 @@
+{
+  "runAt": "2026-06-08T23:34:52Z",
+  "taskId": null,
+  "twinResponse": {
+    "ok": true,
+    "taskId": null,
+    "summary": "Content blueprint for \"Ad creatives that convert for performance marketers\" produced.",
+    "artifacts": [
+      "/data/data/com.termux/files/home/agent-x/digital-twin/artifacts/null-content-draft.json"
+    ]
+  },
+  "delivery": {
+    "httpCode": 200,
+    "body": {
+      "ok": true,
+      "received": {
+        "at": "2026-06-08T23:34:52.204Z",
+        "body": {
+          "source": "agent-x-auto-publish",
+          "ts": "2026-06-08T23:34:52Z",
+          "task": {
+            "type": "content-generation",
+            "payload": {
+              "topic": "Ad creatives that convert for performance marketers",
+              "audience": "performance marketers",
+              "variation": "launch campaign",
+              "tags": [
+                "performance_marketers",
+                "launch_campaign"
+              ],
+              "channels": [
+                "newsletter",
+                "blog",
+                "social_draft"
+              ],
+              "cta": "launch campaign"
+            }
+          },
+          "deliveryReceipt": {
+            "ok": true,
+            "taskId": null,
+            "summary": "Content blueprint for \"Ad creatives that convert for performance marketers\" produced.",
+            "artifacts": [
+              "/data/data/com.termux/files/home/agent-x/digital-twin/artifacts/null-content-draft.json"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

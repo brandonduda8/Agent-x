@@ -1,0 +1,4 @@
+llm:
+  provider: "openrouter"
+  model: "meta-llama/llama-3.1-8b-instruct"
+  base_url: "https://openrouter.ai/api/v1"

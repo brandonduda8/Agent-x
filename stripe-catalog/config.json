@@ -1,0 +1,85 @@
+{
+  "products": [
+    {
+      "id": "ai-automation-guide",
+      "name": "AI Automation Playbook for Founders",
+      "description": "Step-by-step guide to building autonomous income workflows",
+      "price_cents": 4900,
+      "currency": "usd",
+      "delivery_type": "pdf",
+      "fulfillment_agent": "content-generator",
+      "tags": [
+        "automation",
+        "business",
+        "ai"
+      ]
+    },
+    {
+      "id": "social-media-template-pack",
+      "name": "Social Media Template Pack (50+ templates)",
+      "description": "Ready-to-use templates for LinkedIn, Twitter, and Instagram",
+      "price_cents": 2900,
+      "currency": "usd",
+      "delivery_type": "zip",
+      "fulfillment_agent": "content-generator",
+      "tags": [
+        "social",
+        "templates",
+        "marketing"
+      ]
+    },
+    {
+      "id": "newsletter-swipes",
+      "name": "High-Converting Newsletter Swipes",
+      "description": "100+ proven email subject lines and call-to-actions",
+      "price_cents": 1900,
+      "currency": "usd",
+      "delivery_type": "json",
+      "fulfillment_agent": "content-generator",
+      "tags": [
+        "email",
+        "copywriting"
+      ]
+    },
+    {
+      "type": "ebook",
+      "name": "test_product",
+      "price_cents": 1000,
+      "description": "test product"
+    }
+  ],
+  "stripe": {
+    "mode": "mock",
+    "api_version": "2024-06-20",
+    "webhook_secret": "whsec_placeholder",
+    "success_url": "http://localhost:3000/v1/checkout/success?session_id={CHECKOUT_SESSION_ID}",
+    "cancel_url": "http://localhost:3000/v1/checkout/cancel"
+  },
+  "events": [
+    {
+      "ok": true,
+      "received": {
+        "source": "agent-x-auto-publish",
+        "ts": "2026-06-11T20:38:02Z",
+        "payload": {
+          "topic": "Ad creatives that convert for performance marketers",
+          "audience": "performance marketers",
+          "variation": "launch campaign",
+          "tags": [
+            "performance_marketers",
+            "launch_campaign"
+          ]
+        },
+        "twin": {
+          "ok": true,
+          "summary": "Content blueprint for \"Ad creatives that convert for performance marketers\" produced.",
+          "artifacts": [
+            "/data/data/com.termux/files/home/agent-x/digital-twin/artifacts/undefined-content-draft.json"
+          ]
+        }
+      },
+      "checkout_url": "http://localhost:3002/checkout/unknown-product",
+      "timestamp": "2026-06-11T20:38:02.540Z"
+    }
+  ]
+}

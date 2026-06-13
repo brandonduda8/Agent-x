@@ -1,0 +1,161 @@
+const fs = require("fs");
+const path = require("path");
+const readline = require("readline");
+const { exec } = require("child_process");
+
+const ROOT = process.cwd();
+
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout
+});
+
+// ---------------- CORE INTELLIGENCE ----------------
+
+function status() {
+  console.log("\n🧠 AGENT-X SYSTEM STATUS");
+
+  console.log("Node:", process.version);
+  console.log("Path:", ROOT);
+
+  const serverFile = fs.existsSync("execution/server.js");
+  console.log("Server:", serverFile ? "✅ exists" : "❌ missing");
+
+  const revenueFile = fs.existsSync("data/revenue.json");
+  console.log("Revenue DB:", revenueFile ? "✅ exists" : "❌ missing");
+}
+
+function revenue() {
+  console.log("\n💰 REVENUE SNAPSHOT");
+
+  try {
+    const data = JSON.parse(
+      fs.readFileSync("data/revenue.json")
+    );
+
+    const total = data.reduce(
+      (sum, r) => sum + (r.amount || 0),
+      0
+    );
+
+    console.log("Transactions:", data.length);
+    console.log("Total Revenue:", "$" + total / 100);
+
+    if (data.length > 0) {
+      console.log("\nLatest:");
+      console.log(data[data.length - 1]);
+    }
+
+  } catch {
+    console.log("No revenue data yet");
+  }
+}
+
+function scan() {
+  console.log("\n🔍 PROJECT SCAN");
+
+  const files = fs.readdirSync(ROOT);
+
+  files.forEach(f => {
+    console.log("•", f);
+  });
+}
+
+function pm2() {
+  console.log("\n⚙ PM2 STATUS");
+
+  exec("pm2 list", (err, out) => {
+    if (err) return console.log(err.message);
+    console.log(out);
+  });
+}
+
+// ---------------- BUILDER MODE ----------------
+
+function suggestNextStep() {
+  console.log("\n🚀 NEXT BUILD STEP");
+
+  const hasCheckout = fs.existsSync("execution/server.js");
+
+  const hasRevenue = fs.existsSync("data/revenue.json");
+
+  if (!hasCheckout) {
+    console.log("👉 Create Stripe checkout endpoint");
+    return;
+  }
+
+  if (!hasRevenue) {
+    console.log("👉 Create revenue tracking system");
+    return;
+  }
+
+  console.log("👉 Add dashboard at /dashboard");
+  console.log("👉 Add product catalog system");
+  console.log("👉 Add webhook event logging");
+}
+
+// ---------------- CODE GENERATOR ----------------
+
+function generateCheckoutSnippet() {
+  console.log("\n🧾 STRIPE CHECKOUT TEMPLATE:\n");
+
+  console.log(`
+app.post("/create-checkout", async (req, res) => {
+  const session = await stripe.checkout.sessions.create({
+    payment_method_types: ["card"],
+    mode: "payment",
+    line_items: [{
+      price_data: {
+        currency: "usd",
+        product_data: {
+          name: req.body.product
+        },
+        unit_amount: req.body.price * 100
+      },
+      quantity: 1
+    }],
+    success_url: "http://127.0.0.1:3000/",
+    cancel_url: "http://127.0.0.1:3000/"
+  });
+
+  res.json({ url: session.url });
+});
+`);
+}
+
+// ---------------- MENU ----------------
+
+function menu() {
+  console.log(`
+========================
+AGENT-X DEV COPILOT v2
+========================
+
+1. System Status
+2. Revenue Snapshot
+3. Scan Project
+4. PM2 Status
+5. Suggest Next Step
+6. Generate Stripe Checkout Code
+7. Exit
+========================
+`);
+
+  rl.question("Select: ", (ans) => {
+
+    switch(ans.trim()) {
+      case "1": status(); break;
+      case "2": revenue(); break;
+      case "3": scan(); break;
+      case "4": pm2(); break;
+      case "5": suggestNextStep(); break;
+      case "6": generateCheckoutSnippet(); break;
+      case "7": process.exit(0);
+      default: console.log("Invalid");
+    }
+
+    setTimeout(menu, 800);
+  });
+}
+
+menu();

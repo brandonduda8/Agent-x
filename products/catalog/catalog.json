@@ -1,0 +1,133 @@
+{
+  "catalog": [
+    {
+      "id": "prod_1780968540666_ebook",
+      "name": "AI Automation Playbook for Founders",
+      "description": "Step-by-step guide to autonomous income",
+      "type": "ebook",
+      "price_cents": 4900,
+      "currency": "usd",
+      "tags": [
+        "ebook",
+        "digital",
+        "automated"
+      ],
+      "createdAt": "2026-06-09T01:29:00.666320+00:00",
+      "status": "active",
+      "downloadCount": 0,
+      "rating": 4.7
+    },
+    {
+      "id": "prod_1780968540758_template-pack",
+      "name": "Social Media Template Pack",
+      "description": "50+ templates",
+      "type": "template-pack",
+      "price_cents": 2900,
+      "currency": "usd",
+      "tags": [
+        "template-pack",
+        "digital",
+        "automated"
+      ],
+      "createdAt": "2026-06-09T01:29:00.758722+00:00",
+      "status": "active",
+      "downloadCount": 0,
+      "rating": 4.7
+    },
+    {
+      "id": "prod_1780968540850_swipe-file",
+      "name": "Newsletter Swipes",
+      "description": "High-converting subject lines",
+      "type": "swipe-file",
+      "price_cents": 1900,
+      "currency": "usd",
+      "tags": [
+        "swipe-file",
+        "digital",
+        "automated"
+      ],
+      "createdAt": "2026-06-09T01:29:00.850515+00:00",
+      "status": "active",
+      "downloadCount": 0,
+      "rating": 4.7
+    },
+    {
+      "id": "prod_1780969411342_ebook",
+      "name": "Lean Startup Growth Engine",
+      "description": "Growth systems for early-stage SaaS",
+      "type": "ebook",
+      "price_cents": 3900,
+      "currency": "usd",
+      "tags": [
+        "ebook",
+        "digital",
+        "automated"
+      ],
+      "createdAt": "2026-06-09T01:43:31.342346+00:00",
+      "status": "active",
+      "downloadCount": 0,
+      "rating": 4.7
+    },
+    {
+      "id": "prod_1780969411491_template-pack",
+      "name": "YouTube Thumbnail Pack",
+      "description": "30+ editable thumbnails",
+      "type": "template-pack",
+      "price_cents": 3400,
+      "currency": "usd",
+      "tags": [
+        "template-pack",
+        "digital",
+        "automated"
+      ],
+      "createdAt": "2026-06-09T01:43:31.491683+00:00",
+      "status": "active",
+      "downloadCount": 0,
+      "rating": 4.7
+    },
+    {
+      "id": "prod_1780969411646_swipe-file",
+      "name": "Cold Outreach Swipes",
+      "description": "Subject lines and reply templates",
+      "type": "swipe-file",
+      "price_cents": 2200,
+      "currency": "usd",
+      "tags": [
+        "swipe-file",
+        "digital",
+        "automated"
+      ],
+      "createdAt": "2026-06-09T01:43:31.646144+00:00",
+      "status": "active",
+      "downloadCount": 0,
+      "rating": 4.7
+    },
+    {
+      "id": "prod_1781200963958_ebook",
+      "name": "test_product",
+      "description": "test product",
+      "type": "ebook",
+      "price_cents": 1000,
+      "currency": "usd",
+      "tags": [
+        "ebook",
+        "digital",
+        "automated"
+      ],
+      "createdAt": "2026-06-11T18:02:43.958731+00:00",
+      "status": "active",
+      "downloadCount": 0,
+      "rating": 4.7
+    }
+  ],
+  "settings": {
+    "defaultCurrency": "usd",
+    "defaultPriceRange": {
+      "min": 900,
+      "max": 4900
+    },
+    "autoFulfill": true,
+    "watermark": false
+  },
+  "lastGenerated": null
+}

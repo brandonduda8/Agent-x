@@ -1,0 +1,7 @@
+CREATE TABLE IF NOT EXISTS payments (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  stripe_session_id TEXT UNIQUE,
+  amount INTEGER,
+  status TEXT,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);

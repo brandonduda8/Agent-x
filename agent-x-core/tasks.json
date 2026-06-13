@@ -1,0 +1,39 @@
+[
+  {
+    "id": "f63b18cf-0522-4f94-b996-612510d4284b",
+    "type": "content-generation",
+    "payload": {
+      "topic": "AI automation for indie founders",
+      "audience": "indie founders",
+      "sourceApi": "simulated"
+    },
+    "status": "completed",
+    "priority": "normal",
+    "webhook": null,
+    "createdById": "system",
+    "events": [
+      {
+        "type": "created",
+        "detail": "Task queued for execution"
+      },
+      {
+        "type": "started"
+      },
+      {
+        "type": "completed",
+        "detail": "Content blueprint for \"AI automation for indie founders\" produced."
+      }
+    ],
+    "createdAt": "2026-06-08T22:24:21.040Z",
+    "updatedAt": "2026-06-08T22:24:21.043Z",
+    "completedAt": "2026-06-08T22:24:21.301Z",
+    "result": {
+      "ok": true,
+      "taskId": "f63b18cf-0522-4f94-b996-612510d4284b",
+      "summary": "Content blueprint for \"AI automation for indie founders\" produced.",
+      "artifacts": [
+        "/data/data/com.termux/files/home/agent-x/digital-twin/artifacts/f63b18cf-0522-4f94-b996-612510d4284b-content-draft.json"
+      ]
+    }
+  }
+]

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Agent-X v2.1 Live OS</title>
+
+    <style>
+        body {
+            font-family: Arial;
+            background: #0d0d0d;
+            color: #00ffcc;
+        }
+
+        .box {
+            margin: 10px;
+            padding: 10px;
+            background: #1a1a1a;
+            border-radius: 8px;
+        }
+
+        pre {
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+
+<h1>⚡ Agent-X LIVE CONTROL CENTER</h1>
+
+<div class="box">
+    <h2>Live Events</h2>
+    <div id="events"></div>
+</div>
+
+<div class="box">
+    <h2>Supervisor</h2>
+    <pre id="supervisor"></pre>
+</div>
+
+<div class="box">
+    <h2>Tasks</h2>
+    <pre id="tasks"></pre>
+</div>
+
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+
+<script>
+
+const socket = io();
+
+const eventsBox = document.getElementById("events");
+
+socket.on("event", function(msg) {
+
+    const div = document.createElement("div");
+
+    div.innerHTML =
+        "[" + msg.type + "] " +
+        JSON.stringify(msg.data);
+
+    eventsBox.prepend(div);
+});
+
+setInterval(async () => {
+
+    let status = await fetch("/api/status");
+    let tasks = await fetch("/api/tasks");
+
+    let s = await status.json();
+    let t = await tasks.json();
+
+    document.getElementById("supervisor").innerText =
+        JSON.stringify(s.supervisor, null, 2);
+
+    document.getElementById("tasks").innerText =
+        JSON.stringify(t, null, 2);
+
+}, 2000);
+
+</script>
+
+</body>
+</html>

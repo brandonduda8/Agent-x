@@ -1,0 +1,14 @@
+{
+  "productId": "prod_1780968540850_swipe-file",
+  "generatedAt": "2026-06-09T01:29:00.850515+00:00",
+  "content": {
+    "title": "Newsletter Swipes",
+    "type": "swipe-file",
+    "sections": [],
+    "items": 50,
+    "templates": 0,
+    "wordCount": 0
+  },
+  "license": "personal-use",
+  "watermark": false
+}

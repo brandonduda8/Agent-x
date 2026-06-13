@@ -1,0 +1,16 @@
+[Unit]
+Description=Agent X Core
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=%h/agent-x/agent-x-core
+ExecStart=/usr/bin/node index.js
+Restart=on-failure
+RestartSec=5
+Environment=NODE_ENV=production
+StandardOutput=append:%h/agent-x/logs/agent-x-core.log
+StandardError=append:%h/agent-x/logs/agent-x-core.log
+
+[Install]
+WantedBy=multi-user.target

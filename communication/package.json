@@ -1,0 +1,8 @@
+{
+  "name": "agent-x-communication",
+  "version": "1.0.0",
+  "private": true,
+  "optionalDependencies": {
+    "node-fetch": "^3.3.2"
+  }
+}

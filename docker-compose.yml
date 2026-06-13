@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  agent-x-core:
+    build:
+      context: .
+      dockerfile: deployment/Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./agent-x-core:/app/agent-x-core
+      - ./digital-twin:/app/digital-twin
+    environment:
+      - DIGITAL_TWIN_URL=http://digital-twin:3001
+    restart: unless-stopped
+    networks:
+      - agent-x-net
+
+  digital-twin:
+    build:
+      context: .
+      dockerfile: deployment/Dockerfile
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./digital-twin:/app/digital-twin
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
+    networks:
+      - agent-x-net
+
+networks:
+  agent-x-net:
+    driver: bridge

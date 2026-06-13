@@ -1,0 +1,161 @@
+{
+  "runs": [
+    {
+      "goal": "test system",
+      "plan": {
+        "product": "AI-driven content generation tool",
+        "offer": "monthly subscription for unlimited content creation",
+        "audience": "small business owners and content creators",
+        "price": 29.99,
+        "funnel": "stripe|tiktok|dm",
+        "content_hook": "Create engaging content in seconds with AI magic!"
+      },
+      "createdAt": "2026-06-12T11:16:52.372Z"
+    },
+    {
+      "goal": "build AI income system",
+      "plan": {
+        "product": "AI-driven content generation tool for marketers",
+        "offer": "Monthly subscription for premium features and templates",
+        "audience": "Digital marketers, content creators, and small business owners",
+        "price": 29.99,
+        "funnel": "stripe|tiktok|dm",
+        "content_hook": "Unlock the secret to effortless content creation in under 60 seconds!"
+      },
+      "createdAt": "2026-06-12T11:33:17.547Z"
+    },
+    {
+      "goal": "test system",
+      "plan": {
+        "product": "a mobile app for personal finance management",
+        "offer": "subscription-based premium features with a free tier",
+        "audience": "young professionals aged 25-35 interested in budgeting and saving",
+        "price": 9.99,
+        "funnel": "tiktok",
+        "content_hook": "5 budgeting tips that will change your life in 30 seconds"
+      },
+      "score": 50
+    },
+    {
+      "goal": "build AI income system",
+      "plan": {
+        "product": "AI-driven personalized learning platform",
+        "offer": "monthly subscription for tailored courses and resources",
+        "audience": "students and professionals seeking skill enhancement",
+        "price": 29.99,
+        "funnel": "stripe|tiktok|dm",
+        "content_hook": "Unlock your potential with AI! Discover personalized learning paths that adapt to you."
+      }
+    },
+    {
+      "goal": "build AI income system",
+      "plan": {
+        "product": "AI-powered content generation tool",
+        "offer": "monthly subscription for premium features and templates",
+        "audience": "small business owners, marketers, and content creators",
+        "price": 29.99,
+        "funnel": "stripe|tiktok|dm",
+        "content_hook": "Unlock the secret to effortless content creation in just 5 minutes!"
+      }
+    }
+  ],
+  "tasks": [
+    {
+      "id": 1781263997559,
+      "goal": "build AI income system",
+      "status": "generated",
+      "next": "execution_pending"
+    },
+    {
+      "id": 1781264832368,
+      "goal": "test system",
+      "status": "generated",
+      "score": 50
+    },
+    {
+      "id": 1781265887449,
+      "goal": "build AI income system",
+      "status": "generated"
+    }
+  ],
+  "orders": [
+    {
+      "id": 1781263997561,
+      "status": "pending_payment",
+      "product": "AI-driven content generation tool for marketers",
+      "price": 29.99,
+      "funnel": "stripe|tiktok|dm"
+    },
+    {
+      "id": 1781264832370,
+      "status": "pending_payment",
+      "product": "a mobile app for personal finance management",
+      "price": 9.99
+    },
+    {
+      "id": 1781265887451,
+      "status": "pending",
+      "product": "AI-driven personalized learning platform"
+    },
+    {
+      "id": 1781266433644,
+      "status": "pending",
+      "product": "AI-powered content generation tool",
+      "price": 29.99
+    },
+    {
+      "id": 1781268353424,
+      "status": "pending",
+      "product": "AI system: build AI income system",
+      "price": 19.99
+    },
+    {
+      "id": 1781268569839,
+      "status": "paid",
+      "product": "AI system: build AI income system",
+      "price": 19.99
+    },
+    {
+      "id": 1781268668905,
+      "status": "paid",
+      "product": "AI system: build AI income system",
+      "price": 19.99
+    },
+    {
+      "id": 1781268868881,
+      "status": "pending",
+      "product": "AI system: build AI income system",
+      "price": 19.99
+    },
+    {
+      "id": 1781269529723,
+      "status": "pending",
+      "product": "AI tool for: build AI income system",
+      "price": 29.99
+    }
+  ],
+  "outcomes": [],
+  "learning": {
+    "weights": {
+      "price": 1,
+      "ai": 1,
+      "audience": 1,
+      "funnel": 1
+    },
+    "totalOrders": 7,
+    "totalRevenue": 19.99,
+    "winRate": 0.2857142857142857
+  },
+  "revenue": [
+    {
+      "id": 1781268652831,
+      "orderId": 1781268569839,
+      "amount": 19.99
+    },
+    {
+      "id": 1781268853383,
+      "orderId": 1781268668905,
+      "amount": 19.99
+    }
+  ]
+}
