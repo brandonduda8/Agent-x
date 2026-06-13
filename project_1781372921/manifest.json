@@ -1,0 +1,1 @@
+{"manifest_version": 2, "name": "YouTube Summarizer", "version": "1.0", "description": "A Chrome extension that summarizes YouTube videos using AI.", "icons": [{"128": "icon128.png"}], "permissions": ["activeTab"]}

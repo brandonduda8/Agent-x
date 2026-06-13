@@ -1,0 +1,1 @@
+const installBtn = document.getElementById('install-btn'); installBtn.addEventListener('click', function(){ console.log('Install extension logic here'); });

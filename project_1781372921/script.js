@@ -1,0 +1,1 @@
+var script = document.createElement('script'); script.src = 'https://cdn.jsdelivr.net/npm/clause-ai@1.0.0/clause.min.js'; document.head.appendChild(script);

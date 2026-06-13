@@ -1,87 +1,72 @@
 import asyncio
-import aiosqlite
-from datetime import datetime
 from rich.console import Console
 from rich.live import Live
 from rich.table import Table
 from core.event_bus import bus
 from core.hub_bridge import bridge
+from core.llm_client import llm
 from agents.builder.builder_agent import builder
 from agents.researcher.researcher_agent import researcher
 from agents.revenue.revenue_agent import revenue_agent
 
 console = Console()
 
-IDEAS_QUEUE = [
-    "Build a single-page landing page for an 'AI Resume Builder' SaaS with a waitlist form.",
-    "Build a landing page for a 'Chrome Extension that summarizes YouTube videos' with pricing tiers.",
-    "Build a landing page for a 'Freelance Invoice Generator' tool with an email capture."
-]
+async def ceo_brainstorm() -> str:
+    """The CEO asks the LLM for a highly profitable, trending idea."""
+    print("👑 [CEO] Brainstorming next highly profitable micro-SaaS target...")
+    prompt = "Give me ONE highly profitable, trending, and unique micro-SaaS idea for a landing page. Just the name and a 1-sentence description."
+    idea = await llm.generate(prompt, "You are a billionaire startup CEO.", max_tokens=100)
+    return idea.strip().replace('"', '')
 
 def generate_table() -> Table:
-    table = Table(title="🚀 AGENT-X CONTINUOUS AUTOPILOT (Multi-File + Revenue + Git)")
-    table.add_column("Time", justify="right", style="cyan", no_wrap=True)
-    table.add_column("Type", style="magenta")
-    table.add_column("Source → Target", style="green")
-    table.add_column("Payload Summary")
+    table = Table(title="👑 AGENT-X EMPIRE: 24/7 CEO MODE")
+    table.add_column("Time", style="cyan")
+    table.add_column("Agent", style="magenta")
+    table.add_column("Action", style="green")
 
-    for event in bus.event_log[-12:]:
-        payload_str = str(event['payload'])
+    for event in bus.event_log[-8:]:
         table.add_row(
             event['timestamp'][11:19],
-            event['type'].upper(),
-            f"{event['source']} → {event['target']}",
-            payload_str[:45] + ("..." if len(payload_str) > 45 else "")
+            event['source'].upper(),
+            str(event['payload'])[:40] + "..."
         )
     return table
 
-async def save_to_db(project_dir: str, idea: str):
-    async with aiosqlite.connect("agent_x_projects.db") as db:
-        await db.execute("""
-            CREATE TABLE IF NOT EXISTS projects (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                timestamp TEXT,
-                idea TEXT,
-                project_dir TEXT,
-                status TEXT
-            )
-        """)
-        await db.execute(
-            "INSERT INTO projects (timestamp, idea, project_dir, status) VALUES (?, ?, ?, ?)",
-            (datetime.now().isoformat(), idea, project_dir, "SUCCESS")
-        )
-        await db.commit()
-    print(f"💾 [DATABASE] Saved project '{project_dir}' to agent_x_projects.db")
-
 async def main():
-    console.print("[bold green]🚀 Initializing AGENT-X Continuous Autopilot...[/bold green]")
-    console.print("[bold yellow]Press CTRL+C to stop the loop.[/bold yellow]")
+    console.print("[bold green]👑 Initializing CEO Agent - 24/7 Infinite Empire Loop...[/bold green]")
+    console.print("[yellow]Press CTRL+C to stop the empire.[/yellow]\n")
     
-    for idea in IDEAS_QUEUE:
-        console.print(f"\n[bold cyan]🎯 Starting new project: {idea[:60]}...[/bold cyan]")
+    cycle = 1
+    while True:
+        console.print(f"\n[bold cyan]--- EMPIRE CYCLE #{cycle} ---[/bold cyan]")
         
+        # 1. CEO invents an idea
+        idea = await ceo_brainstorm()
+        console.print(f"🎯 [CEO] Target Acquired: {idea}")
+        
+        # 2. Dispatch to the Empire
         await bus.publish({
-            "id": f"auto_{int(asyncio.get_event_loop().time())}",
-            "source": "user",
+            "id": f"empire_{cycle}",
+            "source": "ceo",
             "target": "researcher",
             "type": "task",
-            "payload": {"objective": idea}
+            "payload": {"objective": f"Research and build a high-converting landing page for: {idea}"}
         })
 
-        max_wait = 120
-        for _ in range(max_wait):
-            await asyncio.sleep(1)
-            if bus.event_log and bus.event_log[-1]['source'] == 'builder':
-                last_event = bus.event_log[-1]
-                if last_event['type'] in ['result', 'failure']:
-                    if last_event['type'] == 'result' and 'project_dir' in last_event['payload']:
-                        await save_to_db(last_event['payload'].get('project_dir', 'unknown'), idea)
+        # 3. Watch the empire work
+        with Live(generate_table(), refresh_per_second=2, console=console) as live:
+            for _ in range(120): # Wait up to 2 mins for the build
+                await asyncio.sleep(1)
+                live.update(generate_table())
+                if bus.event_log and bus.event_log[-1]['source'] == 'builder' and bus.event_log[-1]['type'] == 'result':
                     break
-
-    console.print("\n[bold green]✅ Autopilot queue completed! Check your directory for new 'project_XXXX' folders.[/bold green]")
+                    
+        console.print(f"🏁 [CEO] Cycle #{cycle} complete. Deployed to GitHub. Sleeping 30s...")
+        await asyncio.sleep(30)
+        cycle += 1
 
 if __name__ == "__main__":
     try:
         asyncio.run(main())
     except KeyboardInterrupt:
-        console.print("\n[bold red]🛑 Autopilot manually stopped by user.[/bold red]")
+        console.print("\n[bold red]🛑 CEO halted.[/bold red]")
