@@ -1,24 +1,56 @@
+# =============================================================================
+# Agent X — Dockerfile (Linux/cloud deployment only)
+#
+# ⚠  TERMUX USERS: Docker is NOT available in standard Termux.
+#    Use termux/setup.sh + termux/start.sh directly.
+#
+# Build:
+#   docker build -t agent-x -f deployment/Dockerfile .
+# Run:
+#   docker run -d --env-file .env -p 3000:3000 -p 3002:3002 agent-x
+# =============================================================================
+
 FROM node:20-alpine
 
-WORKDIR /app
+# Install Python + pip for the Python intelligence layer
+RUN apk add --no-cache \
+    python3 \
+    py3-pip \
+    bash \
+    curl \
+    jq \
+    && ln -sf python3 /usr/bin/python
 
-# Copy package files first for better caching
-COPY agent-x-core/package.json ./agent-x-core/
-COPY digital-twin/package.json ./digital-twin/
-COPY communication/package.json ./communication/
+WORKDIR /opt/agent-x
 
-# Install dependencies
-RUN cd agent-x-core && npm install --production
-RUN cd digital-twin && npm install --production
-RUN cd communication && npm install --production || true
+# ── Node.js dependencies ─────────────────────────────────────────────────────
+COPY package*.json             ./
+COPY agent-x-core/package*.json agent-x-core/
+COPY digital-twin/package*.json digital-twin/
+COPY communication/package*.json communication/
+COPY webhook-listener/package*.json webhook-listener/
 
-# Copy application code
-COPY agent-x-core/ ./agent-x-core/
-COPY digital-twin/ ./digital-twin/
-COPY communication/ ./communication/
+RUN npm install --omit=dev --silent \
+ && (cd agent-x-core    && npm install --omit=dev --silent) \
+ && (cd digital-twin    && npm install --omit=dev --silent) \
+ && (cd communication   && npm install --omit=dev --silent) \
+ && (cd webhook-listener && npm install --omit=dev --silent)
 
-# Expose ports
-EXPOSE 3000 3001
+# ── Python dependencies ───────────────────────────────────────────────────────
+COPY requirements.txt ./
+RUN pip3 install --no-cache-dir -r requirements.txt
 
-# Start both services
-CMD ["sh", "-c", "cd agent-x-core && node index.js & cd digital-twin && node index.js & wait"]
+# ── Application source ────────────────────────────────────────────────────────
+COPY . .
+
+# Runtime directories
+RUN mkdir -p memory data generated logs products/deliverables products/catalog
+
+# Install PM2 globally for process management inside container
+RUN npm install -g pm2
+
+EXPOSE 3000 3002 5000
+
+ENV NODE_ENV=production
+
+CMD ["pm2-runtime", "start", "termux/start.sh", "--interpreter", "bash"]

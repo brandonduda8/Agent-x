@@ -1,173 +1,278 @@
 #!/usr/bin/env python3
-"""Agent X local process manager.
-- Starts/stops agent-x-core and digital-twin with auto-restart
-- Writes stdout/stderr to log files under ~/agent-x/logs
-- Stores PIDs under ~/agent-x/.pids
 """
+Agent X — Python Process Manager (Termux-compatible)
+=====================================================
+Manages and monitors Agent X services without systemd or Docker.
+Uses subprocess + psutil to spawn and supervise processes, writing
+PID files under $REPO_DIR/logs/.
+
+Replaces any previous systemctl / service invocations.
+
+Usage:
+    python process-manager.py start   [service]
+    python process-manager.py stop    [service]
+    python process-manager.py restart [service]
+    python process-manager.py status
+    python process-manager.py logs    [service] [--lines N]
+"""
+
+import argparse
 import json
 import os
+import signal
 import subprocess
 import sys
 import time
 from pathlib import Path
 
-BASE = Path.home() / "agent-x"
-PID_DIR = BASE / ".pids"
-LOG_DIR = BASE / "logs"
-STATE_FILE = BASE / ".process-manager-state.json"
+# --------------------------------------------------------------------------- #
+# Paths — use $PREFIX for Termux, fall back to /usr on Linux
+# --------------------------------------------------------------------------- #
+PREFIX      = os.environ.get("PREFIX", "/data/data/com.termux/files/usr")
+REPO_DIR    = Path(__file__).resolve().parent
+ENV_FILE    = REPO_DIR / ".env"
+LOGS_DIR    = REPO_DIR / "logs"
+PID_DIR     = LOGS_DIR / "pids"
+NODE_BIN    = Path(PREFIX) / "bin" / "node"
+PYTHON_BIN  = sys.executable
 
-for d in [PID_DIR, LOG_DIR]:
-    d.mkdir(parents=True, exist_ok=True)
+# Fall back to system node if Termux node not found
+if not NODE_BIN.exists():
+    import shutil
+    _node = shutil.which("node")
+    NODE_BIN = Path(_node) if _node else Path("node")
 
+LOGS_DIR.mkdir(parents=True, exist_ok=True)
+PID_DIR.mkdir(parents=True, exist_ok=True)
+
+# --------------------------------------------------------------------------- #
+# Service definitions (no systemd, no Docker)
+# --------------------------------------------------------------------------- #
 SERVICES = {
     "agent-x-core": {
-        "cwd": BASE / "agent-x-core",
-        "cmd": ["node", "index.js"],
-        "env": {"NODE_ENV": "production"},
+        "cmd": [str(NODE_BIN), str(REPO_DIR / "agent-x-core" / "index.js")],
+        "cwd": str(REPO_DIR / "agent-x-core"),
+        "log": str(LOGS_DIR / "agent-x-core.log"),
     },
     "digital-twin": {
-        "cwd": BASE / "digital-twin",
-        "cmd": ["node", "index.js"],
-        "env": {"NODE_ENV": "production"},
+        "cmd": [str(NODE_BIN), str(REPO_DIR / "digital-twin" / "index.js")],
+        "cwd": str(REPO_DIR / "digital-twin"),
+        "log": str(LOGS_DIR / "digital-twin.log"),
+    },
+    "dashboard": {
+        "cmd": [
+            PYTHON_BIN, "-c",
+            (
+                "import os, sys; "
+                f"sys.path.insert(0, '{REPO_DIR}'); "
+                f"os.chdir('{REPO_DIR / 'dashboard'}'); "
+                "from app import app, socketio; "
+                "port = int(os.environ.get('DASHBOARD_PORT', 5000)); "
+                "socketio.run(app, host='0.0.0.0', port=port, debug=False)"
+            ),
+        ],
+        "cwd": str(REPO_DIR / "dashboard"),
+        "log": str(LOGS_DIR / "dashboard.log"),
+    },
+    "webhook-listener": {
+        "cmd": [str(NODE_BIN), str(REPO_DIR / "webhook-listener" / "index.js")],
+        "cwd": str(REPO_DIR / "webhook-listener"),
+        "log": str(LOGS_DIR / "webhook-listener.log"),
     },
 }
 
+# --------------------------------------------------------------------------- #
+# Helpers
+# --------------------------------------------------------------------------- #
 
-def pid_path(name):
+def _load_env() -> dict:
+    """Parse .env file into a dict and merge with os.environ."""
+    env = os.environ.copy()
+    if ENV_FILE.exists():
+        for line in ENV_FILE.read_text().splitlines():
+            line = line.strip()
+            if line and not line.startswith("#") and "=" in line:
+                k, _, v = line.partition("=")
+                env[k.strip()] = v.strip().strip('"').strip("'")
+    return env
+
+
+def _pid_file(name: str) -> Path:
     return PID_DIR / f"{name}.pid"
 
 
-def log_path(name):
-    return LOG_DIR / f"{name}.log"
+def _read_pid(name: str) -> int | None:
+    pf = _pid_file(name)
+    if pf.exists():
+        try:
+            return int(pf.read_text().strip())
+        except ValueError:
+            pass
+    return None
 
 
-def read_pid(name):
-    p = pid_path(name)
-    if not p.exists():
-        return None
-    try:
-        return int(p.read_text().strip())
-    except ValueError:
-        return None
+def _write_pid(name: str, pid: int):
+    _pid_file(name).write_text(str(pid))
 
 
-def write_pid(name, pid):
-    pid_path(name).write_text(str(pid))
+def _clear_pid(name: str):
+    pf = _pid_file(name)
+    if pf.exists():
+        pf.unlink()
 
 
-def remove_pid(name):
-    try:
-        pid_path(name).unlink()
-    except FileNotFoundError:
-        pass
-
-
-def is_running(pid):
+def _is_running(name: str) -> bool:
+    pid = _read_pid(name)
     if pid is None:
         return False
     try:
-        os.kill(pid, 0)
-        return True
-    except ProcessLookupError:
-        return False
-    except PermissionError:
-        return True
+        import psutil
+        return psutil.pid_exists(pid) and psutil.Process(pid).status() != "zombie"
+    except ImportError:
+        # Fallback: send signal 0
+        try:
+            os.kill(pid, 0)
+            return True
+        except (ProcessLookupError, PermissionError):
+            return False
 
 
-def start_service(name):
-    cfg = SERVICES[name]
-    existing = read_pid(name)
-    if existing and is_running(existing):
-        return {"ok": True, "status": "already-running", "pid": existing}
+# --------------------------------------------------------------------------- #
+# Core actions
+# --------------------------------------------------------------------------- #
 
-    log_file = log_path(name).open("a")
+def start_service(name: str):
+    if name not in SERVICES:
+        print(f"[error] Unknown service: {name}")
+        sys.exit(1)
+
+    if _is_running(name):
+        print(f"[{name}] Already running (PID {_read_pid(name)})")
+        return
+
+    svc = SERVICES[name]
+    env = _load_env()
+
+    log_path = svc["log"]
+    log_handle = open(log_path, "a")
+
     proc = subprocess.Popen(
-        cfg["cmd"],
-        cwd=str(cfg["cwd"]),
-        stdout=log_file,
-        stderr=subprocess.STDOUT,
-        env={**os.environ, **cfg.get("env", {})},
-        close_fds=True,
+        svc["cmd"],
+        cwd=svc["cwd"],
+        env=env,
+        stdout=log_handle,
+        stderr=log_handle,
+        stdin=subprocess.DEVNULL,
+        start_new_session=True,  # detach from parent; no setsid needed
     )
-    write_pid(name, proc.pid)
-    time.sleep(1.5)
-    if is_running(proc.pid):
-        return {"ok": True, "status": "started", "pid": proc.pid}
-    else:
-        remove_pid(name)
-        return {"ok": False, "status": "failed-to-start", "pid": proc.pid}
+
+    _write_pid(name, proc.pid)
+    print(f"[{name}] Started — PID {proc.pid}  log → {log_path}")
 
 
-def stop_service(name):
-    pid = read_pid(name)
-    if not pid or not is_running(pid):
-        remove_pid(name)
-        return {"ok": True, "status": "not-running"}
+def stop_service(name: str):
+    if name not in SERVICES:
+        print(f"[error] Unknown service: {name}")
+        sys.exit(1)
+
+    pid = _read_pid(name)
+    if pid is None or not _is_running(name):
+        print(f"[{name}] Not running.")
+        _clear_pid(name)
+        return
+
+    print(f"[{name}] Stopping PID {pid}…")
     try:
-        os.kill(pid, 15)  # SIGTERM
-        time.sleep(1)
-        if is_running(pid):
-            os.kill(pid, 9)  # SIGKILL
+        os.kill(pid, signal.SIGTERM)
+        for _ in range(10):
             time.sleep(0.5)
+            if not _is_running(name):
+                break
+        else:
+            os.kill(pid, signal.SIGKILL)
+            print(f"[{name}] Force-killed.")
     except ProcessLookupError:
         pass
-    remove_pid(name)
-    return {"ok": True, "status": "stopped"}
+
+    _clear_pid(name)
+    print(f"[{name}] Stopped.")
+
+
+def restart_service(name: str):
+    stop_service(name)
+    time.sleep(1)
+    start_service(name)
 
 
 def status_all():
-    out = {}
+    print("\n  Agent X — Service Status")
+    print("  " + "─" * 50)
     for name in SERVICES:
-        pid = read_pid(name)
-        out[name] = {
-            "pid": pid,
-            "running": is_running(pid),
-            "pid_file": str(pid_path(name)),
-            "log_file": str(log_path(name)),
-        }
-    return out
+        running = _is_running(name)
+        pid     = _read_pid(name) if running else "—"
+        symbol  = "✔" if running else "✘"
+        state   = "running" if running else "stopped"
+        print(f"  {symbol}  {name:<22} {state:<10}  PID: {pid}")
+    print()
 
+
+def show_logs(name: str, lines: int = 40):
+    if name not in SERVICES:
+        print(f"[error] Unknown service: {name}")
+        sys.exit(1)
+    log_path = SERVICES[name]["log"]
+    if not Path(log_path).exists():
+        print(f"[{name}] No log file yet: {log_path}")
+        return
+    with open(log_path) as f:
+        all_lines = f.readlines()
+    for line in all_lines[-lines:]:
+        print(line, end="")
+
+
+# --------------------------------------------------------------------------- #
+# CLI
+# --------------------------------------------------------------------------- #
 
 def main():
-    if len(sys.argv) < 2:
-        print(json.dumps({"error": "usage: process-manager.py <start|stop|restart|status> [service]"}, indent=2))
-        raise SystemExit(1)
+    parser = argparse.ArgumentParser(description="Agent X process manager (Termux-safe)")
+    parser.add_argument(
+        "action",
+        choices=["start", "stop", "restart", "status", "logs"],
+        help="Action to perform",
+    )
+    parser.add_argument(
+        "service",
+        nargs="?",
+        default="all",
+        help="Service name or 'all' (default: all)",
+    )
+    parser.add_argument(
+        "--lines",
+        type=int,
+        default=40,
+        help="Number of log lines to show (with 'logs' action)",
+    )
+    args = parser.parse_args()
 
-    action = sys.argv[1]
-    target = sys.argv[2] if len(sys.argv) > 2 else None
+    target_services = list(SERVICES.keys()) if args.service == "all" else [args.service]
 
-    if action == "start":
-        if target:
-            print(json.dumps(start_service(target), indent=2))
-        else:
-            results = {}
-            for name in SERVICES:
-                results[name] = start_service(name)
-            print(json.dumps(results, indent=2))
-    elif action == "stop":
-        if target:
-            print(json.dumps(stop_service(target), indent=2))
-        else:
-            results = {}
-            for name in SERVICES:
-                results[name] = stop_service(name)
-            print(json.dumps(results, indent=2))
-    elif action == "restart":
-        if target:
-            stop_service(target)
-            time.sleep(1)
-            print(json.dumps(start_service(target), indent=2))
-        else:
-            for name in SERVICES:
-                stop_service(name)
-                time.sleep(1)
-                start_service(name)
-            print(json.dumps(status_all(), indent=2))
-    elif action == "status":
-        print(json.dumps(status_all(), indent=2))
-    else:
-        print(json.dumps({"error": f"unknown action: {action}"}, indent=2))
-        raise SystemExit(1)
+    if args.action == "status":
+        status_all()
+        return
+
+    if args.action == "logs":
+        svc = args.service if args.service != "all" else "agent-x-core"
+        show_logs(svc, args.lines)
+        return
+
+    for name in target_services:
+        if args.action == "start":
+            start_service(name)
+        elif args.action == "stop":
+            stop_service(name)
+        elif args.action == "restart":
+            restart_service(name)
 
 
 if __name__ == "__main__":

@@ -1,103 +1,112 @@
 #!/usr/bin/env python3
-"""Master Orchestrator wrapper for Agent X core agents.
-Features:
-  - readline-based streaming for each agent file
-  - explicit stdout/stderr listeners
-  - auto-detects empty output and prints failure marker
-  - minimal telemetry
 """
-import subprocess, sys, os
+Agent X — Orchestrator Runner (Termux-compatible)
+==================================================
+Launches the JS orchestrator agent via subprocess.
+Replaces any previous shell invocations that used hardcoded /usr/bin/node
+or assumed systemd process management.
 
-AGENTS_DIR = os.path.expanduser("~/agent-x/agent-x-core/agents")
+Usage:
+    python agent-x-core/agents/orchestrator.run.py
+    python agent-x-core/agents/orchestrator.run.py --task '{"type":"content","payload":{}}'
+"""
 
-CORE_AGENTS = ["content-generator.js", "api-socket.js", "publisher.js", "watchdog.js"]
+import json
+import os
+import subprocess
+import sys
+from pathlib import Path
 
-SAMPLE = {
-    "content-generator.js": {
-        "action": "draft",
-        "requestId": "orch-1",
-        "payload": {"topic": "automation", "audience": "founders", "variant": "short"},
-    },
-    "api-socket.js": {
-        "action": "get",
-        "requestId": "orch-2",
-        "payload": {"url": "https://httpbin.org/get"},
-    },
-    "publisher.js": {
-        "action": "publish",
-        "requestId": "orch-3",
-        "payload": {
-            "platform": "webhook",
-            "artifactId": "demo-1",
-            "credentials": {"endpoint": "http://localhost:9000"},
-        },
-    },
-    "watchdog.js": {
-        "action": "probe",
-        "requestId": "orch-4",
-        "payload": {"targets": ["http://localhost:3000", "http://localhost:3001"]},
-    },
-}
+# --------------------------------------------------------------------------- #
+# Resolve paths using $PREFIX (Termux) or system defaults
+# --------------------------------------------------------------------------- #
+PREFIX   = os.environ.get("PREFIX", "/data/data/com.termux/files/usr")
+REPO_DIR = Path(__file__).resolve().parent.parent.parent
+
+# Find node — prefer $PREFIX/bin/node (Termux), fall back to PATH
+import shutil as _shutil
+NODE_BIN = (
+    str(Path(PREFIX) / "bin" / "node")
+    if Path(PREFIX, "bin", "node").exists()
+    else (_shutil.which("node") or "node")
+)
+
+ORCHESTRATOR_JS = REPO_DIR / "agent-x-core" / "agents" / "orchestrator.js"
+ENV_FILE        = REPO_DIR / ".env"
+
+# --------------------------------------------------------------------------- #
+# Load .env
+# --------------------------------------------------------------------------- #
+def load_env() -> dict:
+    env = os.environ.copy()
+    if ENV_FILE.exists():
+        for line in ENV_FILE.read_text().splitlines():
+            line = line.strip()
+            if line and not line.startswith("#") and "=" in line:
+                k, _, v = line.partition("=")
+                env[k.strip()] = v.strip().strip('"').strip("'")
+    return env
 
 
-def run_agent(agent_name):
-    agent_path = os.path.join(AGENTS_DIR, agent_name)
-    cmd = [sys.executable if agent_name.endswith(".py") else "node", agent_path]
-    raw = json.dumps(SAMPLE.get(agent_name, {"action": "ping"})) + "\n"
-    try:
-        proc = subprocess.Popen(
-            cmd,
-            stdin=subprocess.PIPE,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True,
-            bufsize=1,
-        )
-        out, err = proc.communicate(input=raw, timeout=120)
-        rc = proc.returncode
-    except subprocess.TimeoutExpired:
+# --------------------------------------------------------------------------- #
+# Run orchestrator
+# --------------------------------------------------------------------------- #
+def run(task_json: str | None = None):
+    if not ORCHESTRATOR_JS.exists():
+        print(f"[error] Orchestrator not found: {ORCHESTRATOR_JS}", file=sys.stderr)
+        sys.exit(1)
+
+    env = load_env()
+    cmd = [NODE_BIN, str(ORCHESTRATOR_JS)]
+
+    print(f"[orchestrator.run] Starting: {' '.join(cmd)}", flush=True)
+
+    proc = subprocess.Popen(
+        cmd,
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=sys.stderr,
+        env=env,
+        cwd=str(REPO_DIR / "agent-x-core"),
+    )
+
+    # If a task was passed, write it to stdin and read the response
+    if task_json:
+        payload = task_json.encode() if isinstance(task_json, str) else task_json
+        stdout_data, _ = proc.communicate(input=payload, timeout=30)
+        output = stdout_data.decode().strip()
         try:
-            proc.kill()
-        except Exception:
-            pass
-        out, err = "", "timeout"
-        rc = 124
+            result = json.loads(output)
+            print(json.dumps(result, indent=2))
+            return result
+        except json.JSONDecodeError:
+            print(output)
+            return {"ok": False, "error": "non-JSON response", "raw": output}
+    else:
+        # Interactive / long-running mode
+        try:
+            proc.wait()
+        except KeyboardInterrupt:
+            proc.terminate()
+            print("\n[orchestrator.run] Interrupted.", flush=True)
 
-    stdout_len = len((out or "").strip())
-    stderr_len = len((err or "").strip())
-    status = "ok" if rc == 0 and stdout_len > 0 else "empty-or-fail"
-
-    return {
-        "agent": agent_name,
-        "status": status,
-        "rc": rc,
-        "stdout_len": stdout_len,
-        "stderr_len": stderr_len,
-        "stdout_head": (out or "").strip()[:400],
-        "stderr_head": (err or "").strip()[:400],
-    }
+    return {"ok": True}
 
 
-def main():
-    results = []
-    for agent in CORE_AGENTS:
-        print(f"[orchestrator] running {agent}", flush=True)
-        result = run_agent(agent)
-        results.append(result)
-        print(
-            f"[orchestrator] {agent}: {result['status']} rc={result['rc']} stdout_len={result['stdout_len']} stderr_len={result['stderr_len']}",
-            flush=True,
-        )
-        if result["stdout_head"]:
-            print(result["stdout_head"], flush=True)
-        else:
-            print("[orchestrator] EMPTY OUTPUT DETECTED", flush=True)
-        if result["stderr_head"]:
-            print("STDERR:", result["stderr_head"], flush=True)
-
-    print("[orchestrator] finished core agents", flush=True)
-
-
+# --------------------------------------------------------------------------- #
+# CLI
+# --------------------------------------------------------------------------- #
 if __name__ == "__main__":
-    import json
-    main()
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Agent X orchestrator runner")
+    parser.add_argument(
+        "--task",
+        help='JSON task envelope, e.g. \'{"type":"content","payload":{}}\'',
+        default=None,
+    )
+    args = parser.parse_args()
+
+    result = run(args.task)
+    if isinstance(result, dict) and not result.get("ok", True):
+        sys.exit(1)
