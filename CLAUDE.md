@@ -44,7 +44,7 @@ The project blends a **Node.js microservices core** with a **Python intelligence
 | `dashboard` | Python/Flask | 3001* | Real-time UI via SocketIO |
 | `communication` | Node.js | — | Shared packet schema + sender |
 | `webhook-listener` | Node.js | — | Stripe/external webhook ingestion |
-| `stripe-catalog` | Node.js | — | Product catalog + Stripe integration |
+| `stripe-catalog` | Node.js | — | Stripe product catalog integration |
 
 > *Dashboard may conflict with digital-twin on port 3001 — check `PORT` env var.
 
@@ -65,6 +65,7 @@ The system is explicitly designed to run on **Android via Termux**. A dedicated 
 - **Storage permissions**: File I/O outside Termux home requires `termux-setup-storage`.
 
 ### Termux Bootstrap / Startup
+- **`setup.sh`**: Primary Termux bootstrap setup script — installs all dependencies (Node.js, Python, PM2), creates required directories, copies `.env` template, and starts all services. Located at repo root.
 - **`deployment/termux-boot.sh`**: Auto-start script for Termux:Boot addon — launches all services on device boot.
 - Scripts must be POSIX-compatible (`#!/bin/sh` or `#!/bin/bash` with bash verified available).
 - Avoid GNU-specific flags not present in Termux's busybox utilities.
@@ -90,6 +91,22 @@ node agent-x-core/index.js &
 - Python agents can be managed via `process-manager.py` or launched directly with `nohup`.
 - No systemd `.service` files are used in Termux deployments (those exist only for Linux server deployments).
 
+### setup.sh — Bootstrap Script (Root)
+The root-level `setup.sh` is the **primary Termux onboarding entrypoint**. It performs:
+1. `pkg install` of system dependencies (nodejs, python, git, curl)
+2. `npm install` for all Node.js packages
+3. `pip install` for Python dependencies
+4. Directory creation (`memory/`, `data/`, `generated/`, `products/deliverables/`, `logs/`)
+5. `.env` file creation from template if not present
+6. PM2 installation and service startup
+7. `termux-wake-lock` invocation for persistent background execution
+
+Conventions:
+- Uses `#!/bin/bash` with a fallback check for bash availability
+- All paths relative to `$HOME` or the script's own directory
+- Idempotent: safe to re-run without destructive side effects
+- Prints status messages with emoji prefixes for readability in Termux terminal
+
 ---
 
 ## Repository Structure
@@ -97,6 +114,7 @@ node agent-x-core/index.js &
 ```
 agent-x/
 │
+├── setup.sh                    # PRIMARY Termux bootstrap — install deps + start services
 ├── agent-x-core/               # Primary command center (Node.js + Express)
 │   ├── index.js                # Entry point — Express API server
 │   ├── tasks.json              # Task queue/definitions
@@ -205,6 +223,8 @@ agent-x/
 │   ├── schema.sql              # DB schema
 │   └── tasks.json              # Task data
 │
+├── logs/                       # Runtime logs (auto-created by setup.sh)
+│
 ├── deployment/                 # Deployment manifests
 │   ├── Dockerfile              # Docker image (node:20-alpine) — server only
 │   ├── docker-compose.yml      # Multi-service compose — server only
@@ -239,6 +259,7 @@ agent-x/
 ├── process-manager.py          # Python process manager
 ├── setup_agents.sh             # Agent setup script (Termux-compatible)
 ├── upgrade_agents.sh           # Agent upgrade script (Termux-compatible)
+├── README.md                   # Project README — includes Termux quickstart
 └── strategy.md                 # Revenue/product strategy notes
 ```
 
@@ -274,7 +295,7 @@ agent-x/
 - **Docker**: `node:20-alpine` base image — **Linux server deployments only**
 - **docker-compose**: Multi-service orchestration — **Linux server deployments only**
 - **systemd**: Linux service management — **Linux server deployments only**
-- **Termux**: Android/mobile deployment target — uses PM2 + `termux-boot.sh`, no Docker/systemd
+- **Termux**: Android/mobile deployment target — uses PM2 + `setup.sh` + `termux-boot.sh`, no Docker/systemd
 - **PM2**: Node.js process manager — used in both server and Termux deployments
 
 ---
@@ -283,36 +304,9 @@ agent-x/
 
 | File | Purpose |
 |---|---|
+| `setup.sh` | **Primary Termux bootstrap** — install deps, create dirs, start services |
+| `README.md` | Project documentation with Termux quickstart instructions |
 | `agent-x-core/index.js` | Main Express server — task submission entry point |
 | `agent-x-core/agents/orchestrator.js` | Routes tasks to worker agents |
 | `agent-x-core/agents/content-generator.js` | Drafts marketing copy, emails, posts |
-| `agent-x-core/agents/data-aggregator.js` | Fetches and summarizes external data |
-| `agent-x-core/agents/api-socket.js` | Performs outbound HTTP calls |
-| `digital-twin/index.js` | Execution pipeline runner |
-| `dashboard/app.py` | Flask + SocketIO dashboard |
-| `core/supervisor.py` | Monitors and manages Python agents |
-| `core/task_registry.py` | Tracks all tasks and their states |
-| `core/state_manager.py` | Global persistent state |
-| `core/llm_client.py` | Abstraction over LLM providers |
-| `core/loop_engine.py` | Continuous autonomous loop |
-| `core/revenue_engine.py` | Revenue generation logic |
-| `products/product-factory.py` | Creates product definitions |
-| `execution/stripe.js` | Stripe checkout and fulfillment |
-| `config/settings.yaml` | Central configuration |
-| `memory/state.json` | Live system state |
-| `data/db.json` | Primary data store |
-| `deployment/Dockerfile` | Container image definition (server only) |
-| `deployment/termux-boot.sh` | Termux auto-start on device boot |
-| `setup_agents.sh` | Termux-compatible agent setup script |
-
----
-
-## Agent Communication Protocol
-
-Worker agents in `agent-x-core/agents/` communicate via **stdio JSON envelopes** — one JSON object per line on stdin, one response on stdout.
-
-### Request Envelope
-```json
-{
-  "action": "draft",
-  "requestId":
+| `agent-x-core/agents/data-aggregator.
