@@ -1,16 +1,32 @@
+# =============================================================================
+# digital-twin.service — systemd unit (Linux server / desktop only)
+#
+# ⚠  TERMUX USERS: systemd is NOT available in Termux.
+#    Use deployment/termux-boot.sh + PM2 instead.
+#    See: termux/start.sh
+#
+# Installation (Linux with systemd):
+#   sudo cp deployment/digital-twin.service /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable digital-twin
+#   sudo systemctl start  digital-twin
+# =============================================================================
+
 [Unit]
-Description=Agent X Digital Twin
-After=network.target
+Description=Agent X Digital Twin — Pipeline Runner & Artifact Manager
+After=network.target agent-x-core.service
+Wants=network-online.target
 
 [Service]
 Type=simple
-WorkingDirectory=%h/agent-x/digital-twin
-ExecStart=/usr/bin/node index.js
+User=%i
+WorkingDirectory=/opt/agent-x/digital-twin
+EnvironmentFile=/opt/agent-x/.env
+ExecStart=/usr/bin/node /opt/agent-x/digital-twin/index.js
 Restart=on-failure
-RestartSec=5
-Environment=NODE_ENV=production
-StandardOutput=append:%h/agent-x/logs/digital-twin.log
-StandardError=append:%h/agent-x/logs/digital-twin.log
+RestartSec=5s
+StandardOutput=append:/opt/agent-x/logs/digital-twin.log
+StandardError=append:/opt/agent-x/logs/digital-twin.log
 
 [Install]
 WantedBy=multi-user.target

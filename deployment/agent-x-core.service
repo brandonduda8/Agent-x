@@ -1,16 +1,32 @@
+# =============================================================================
+# agent-x-core.service — systemd unit (Linux server / desktop only)
+#
+# ⚠  TERMUX USERS: systemd is NOT available in Termux.
+#    Use deployment/termux-boot.sh + PM2 instead.
+#    See: termux/start.sh
+#
+# Installation (Linux with systemd):
+#   sudo cp deployment/agent-x-core.service /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable agent-x-core
+#   sudo systemctl start  agent-x-core
+# =============================================================================
+
 [Unit]
-Description=Agent X Core
+Description=Agent X Core — Task API & Orchestrator
 After=network.target
+Wants=network-online.target
 
 [Service]
 Type=simple
-WorkingDirectory=%h/agent-x/agent-x-core
-ExecStart=/usr/bin/node index.js
+User=%i
+WorkingDirectory=/opt/agent-x/agent-x-core
+EnvironmentFile=/opt/agent-x/.env
+ExecStart=/usr/bin/node /opt/agent-x/agent-x-core/index.js
 Restart=on-failure
-RestartSec=5
-Environment=NODE_ENV=production
-StandardOutput=append:%h/agent-x/logs/agent-x-core.log
-StandardError=append:%h/agent-x/logs/agent-x-core.log
+RestartSec=5s
+StandardOutput=append:/opt/agent-x/logs/agent-x-core.log
+StandardError=append:/opt/agent-x/logs/agent-x-core.log
 
 [Install]
 WantedBy=multi-user.target
