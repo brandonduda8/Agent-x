@@ -107,6 +107,16 @@ Conventions:
 - Idempotent: safe to re-run without destructive side effects
 - Prints status messages with emoji prefixes for readability in Termux terminal
 
+### Dev Server & Build Testing in Termux
+A dedicated test pass (`feat/termux-dev-server-build-tests`) was completed to validate the dev server startup and build process under Termux constraints. Key findings and conventions established:
+
+- **Dev server startup**: `agent-x-core` (`node index.js` or via PM2) must be validated to bind and respond on port 3000 before dependent services start. Health-check pattern: `curl -s http://localhost:3000/health` with retry loop.
+- **Build process**: No traditional "build step" exists (no transpilation/bundling for Node.js core); Python agents run directly. "Build" in this context means dependency installation (`npm install`, `pip install`) + directory scaffolding.
+- **Test scripts**: Added lightweight smoke-test scripts to verify server responsiveness and agent process launch in Termux without requiring a full CI environment.
+- **Port conflict detection**: Scripts now check for existing processes on ports 3000/3001 before starting services to avoid silent failures in Termux's single-session environment.
+- **Environment validation**: Pre-flight checks confirm required env vars (`STRIPE_SECRET_KEY`, etc.) are present in `.env` before service launch; missing vars emit warnings but do not hard-fail, allowing partial operation.
+- **nodemon excluded from Termux**: `nodemon` is development-only and should not be used in Termux PM2 ecosystem configs — use `node` directly in `ecosystem.config.js` for Termux targets.
+
 ---
 
 ## Repository Structure
@@ -279,34 +289,6 @@ agent-x/
 | `jsonwebtoken` | ^9.0.3 | Auth tokens |
 | `bcryptjs` | ^3.0.3 | Password hashing |
 | `lowdb` | ^7.0.1 | Lightweight JSON database |
-| `nodemon` | ^3.1.14 | Dev file watching |
+| `nodemon` | ^3.1.14 | Dev file watching — **dev/server only, not used in Termux PM2 configs** |
 | `pm2` | ^5.3.0 | Process management (server + Termux) |
-| `node-fetch` | ^3.3.2 | Fetch API (optional, communication) |
-
-### Python
-| Package | Purpose |
-|---|---|
-| `flask` | Dashboard HTTP server |
-| `flask-socketio` | Real-time WebSocket events |
-| `transformers` | HuggingFace NLP/LLM pipelines |
-| `requests` (implied) | HTTP calls from Python agents |
-
-### Infrastructure
-- **Docker**: `node:20-alpine` base image — **Linux server deployments only**
-- **docker-compose**: Multi-service orchestration — **Linux server deployments only**
-- **systemd**: Linux service management — **Linux server deployments only**
-- **Termux**: Android/mobile deployment target — uses PM2 + `setup.sh` + `termux-boot.sh`, no Docker/systemd
-- **PM2**: Node.js process manager — used in both server and Termux deployments
-
----
-
-## Key Files Reference
-
-| File | Purpose |
-|---|---|
-| `setup.sh` | **Primary Termux bootstrap** — install deps, create dirs, start services |
-| `README.md` | Project documentation with Termux quickstart instructions |
-| `agent-x-core/index.js` | Main Express server — task submission entry point |
-| `agent-x-core/agents/orchestrator.js` | Routes tasks to worker agents |
-| `agent-x-core/agents/content-generator.js` | Drafts marketing copy, emails, posts |
-| `agent-x-core/agents/data-aggregator.
+| `node-fetch` | ^
