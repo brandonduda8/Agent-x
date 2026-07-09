@@ -1,0 +1,68 @@
+{
+  "agents": [
+    {
+      "agentId": "__broadcast__",
+      "agentName": "broadcast",
+      "zangiUserId": null,
+      "zangiChannelId": null,
+      "capabilities": [],
+      "active": true
+    },
+    {
+      "agentId": "orchestrator",
+      "agentName": "orchestrator",
+      "zangiUserId": null,
+      "zangiChannelId": null,
+      "capabilities": ["route", "coordinate"],
+      "active": true
+    },
+    {
+      "agentId": "content-generator",
+      "agentName": "content-generator",
+      "zangiUserId": null,
+      "zangiChannelId": null,
+      "capabilities": ["draft", "email", "post"],
+      "active": true
+    },
+    {
+      "agentId": "data-aggregator",
+      "agentName": "data-aggregator",
+      "zangiUserId": null,
+      "zangiChannelId": null,
+      "capabilities": ["fetch", "summarise", "aggregate"],
+      "active": true
+    },
+    {
+      "agentId": "publisher",
+      "agentName": "publisher",
+      "zangiUserId": null,
+      "zangiChannelId": null,
+      "capabilities": ["publish", "distribute"],
+      "active": true
+    },
+    {
+      "agentId": "infrastructure",
+      "agentName": "infrastructure",
+      "zangiUserId": null,
+      "zangiChannelId": null,
+      "capabilities": ["env-check", "network-probe", "lifecycle"],
+      "active": true
+    },
+    {
+      "agentId": "api-socket",
+      "agentName": "api-socket",
+      "zangiUserId": null,
+      "zangiChannelId": null,
+      "capabilities": ["http-get", "http-post"],
+      "active": true
+    },
+    {
+      "agentId": "watchdog",
+      "agentName": "watchdog",
+      "zangiUserId": null,
+      "zangiChannelId": null,
+      "capabilities": ["health-monitor", "restart"],
+      "active": true
+    }
+  ]
+}
