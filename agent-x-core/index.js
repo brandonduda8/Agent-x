@@ -1,152 +1,133 @@
 /**
- * Agent X Core — Command Center
- * Port: 3000
+ * agent-x-core/index.js
+ * =============================================================================
+ * Agent X — Command Center (Port 3000)
  *
- * Express API server for task routing, agent orchestration,
- * registry management, upgrade management, and Zangi messaging.
+ * Express API server that mounts all subsystem routers and starts
+ * background agents (Hermes job-discovery, registry heartbeat monitor, etc.)
+ * =============================================================================
  */
 
-'use strict';
+"use strict";
 
-require('dotenv').config();
+require("dotenv").config({ path: require("path").resolve(__dirname, "..", ".env") });
 
-const express = require('express');
-const cors = require('cors');
-const path = require('path');
+const express = require("express");
+const cors    = require("cors");
+const path    = require("path");
 
-const app = express();
+const app  = express();
 const PORT = process.env.PORT || 3000;
 
 // ---------------------------------------------------------------------------
 // Middleware
 // ---------------------------------------------------------------------------
-
 app.use(cors());
-
-// Note: /api/zangi/webhook uses its own rawBodyCapture middleware and must NOT
-// be pre-parsed by express.json(). We apply JSON parsing only to other routes.
-app.use((req, res, next) => {
-  // Skip JSON body parsing for the Zangi webhook path — it does its own.
-  if (req.path === '/api/zangi/webhook' || req.path === '/v1/zangi/webhook') {
-    return next();
-  }
-  express.json()(req, res, next);
-});
-
+app.use(express.json({ limit: "2mb" }));
 app.use(express.urlencoded({ extended: true }));
-
-// ---------------------------------------------------------------------------
-// Health / root
-// ---------------------------------------------------------------------------
-
-app.get('/', (req, res) => {
-  res.json({
-    service: 'agent-x-core',
-    status: 'running',
-    port: PORT,
-    version: process.env.npm_package_version || '1.0.0',
-  });
-});
-
-app.get('/health', (req, res) => {
-  res.json({ status: 'ok', uptime: process.uptime() });
-});
 
 // ---------------------------------------------------------------------------
 // Routes
 // ---------------------------------------------------------------------------
 
-// Agent registry REST API
+// Registry & heartbeat
 try {
-  const registryApi = require('./registry/registry-api');
-  app.use('/v1/registry', registryApi);
-  console.info('[Core] Mounted registry API at /v1/registry');
-} catch (err) {
-  console.warn('[Core] Registry API not loaded:', err.message);
+  const registryApi = require("./registry/registry-api");
+  app.use("/v1/registry", registryApi);
+  console.log("[Core] Mounted: /v1/registry");
+} catch (e) {
+  console.warn("[Core] registry-api not loaded:", e.message);
 }
 
-// Upgrade & config versioning API
+// Agent upgrade & config versioning
 try {
-  const upgradeApi = require('./routes/upgrade');
-  app.use('/v1/upgrade', upgradeApi);
-  console.info('[Core] Mounted upgrade API at /v1/upgrade');
-} catch (err) {
-  console.warn('[Core] Upgrade API not loaded:', err.message);
+  const upgradeApi = require("./routes/upgrade");
+  app.use("/v1/upgrade", upgradeApi);
+  console.log("[Core] Mounted: /v1/upgrade");
+} catch (e) {
+  console.warn("[Core] upgrade route not loaded:", e.message);
 }
 
-// Agent routes
+// Zangi communication layer
 try {
-  const agentsRoute = require('./routes/agents');
-  app.use('/v1/agents', agentsRoute);
-  console.info('[Core] Mounted agents route at /v1/agents');
-} catch (err) {
-  console.warn('[Core] Agents route not loaded:', err.message);
+  const zangiApi = require("./routes/zangi");
+  app.use("/v1/zangi", zangiApi);
+  console.log("[Core] Mounted: /v1/zangi");
+} catch (e) {
+  console.warn("[Core] zangi route not loaded:", e.message);
 }
 
-// ────────────────────────────────────────────────────────────────────────────
-// Zangi Communication Layer
-// ────────────────────────────────────────────────────────────────────────────
+// Agent management (generic)
 try {
-  const zangiRouter = require('./routes/zangi');
-  app.use('/api/zangi', zangiRouter);
-  // Also expose under versioned path for consistency
-  app.use('/v1/zangi', zangiRouter);
-  console.info('[Core] ✓ Mounted Zangi API at /api/zangi and /v1/zangi');
-} catch (err) {
-  console.error('[Core] ✗ Failed to mount Zangi API:', err.message);
+  const agentsApi = require("./routes/agents");
+  app.use("/v1/agents", agentsApi);
+  console.log("[Core] Mounted: /v1/agents");
+} catch (e) {
+  console.warn("[Core] agents route not loaded:", e.message);
 }
-// ────────────────────────────────────────────────────────────────────────────
+
+// ── Hermes Job Discovery & Matching ────────────────────────────────────────
+const hermesRouter = require("./routes/hermes");
+app.use("/api/hermes", hermesRouter);
+console.log("[Core] Mounted: /api/hermes");
 
 // ---------------------------------------------------------------------------
-// Task API (internal use — agents post results here)
+// Health / root
 // ---------------------------------------------------------------------------
-
-// Simple in-memory task store (replace with lowdb / db.json in production)
-const tasks = new Map();
-
-app.get('/v1/tasks', (req, res) => {
-  res.json({ tasks: [...tasks.values()] });
+app.get("/", (_req, res) => {
+  res.json({
+    service : "agent-x-core",
+    version : require("./package.json").version || "1.0.0",
+    status  : "ok",
+    uptime  : process.uptime(),
+    routes  : [
+      "GET  /",
+      "GET  /health",
+      "GET  /v1/registry/agents",
+      "POST /v1/registry/agents/register",
+      "POST /v1/registry/agents/:id/heartbeat",
+      "DELETE /v1/registry/agents/:id",
+      "GET  /api/hermes/health",
+      "GET  /api/hermes/jobs",
+      "POST /api/hermes/jobs",
+      "GET  /api/hermes/jobs/:id",
+      "PATCH /api/hermes/jobs/:id",
+      "DELETE /api/hermes/jobs/:id",
+      "GET  /api/hermes/jobs/:id/rank",
+      "POST /api/hermes/scan",
+      "POST /api/hermes/match",
+      "GET  /api/hermes/stats",
+    ],
+  });
 });
 
-app.get('/v1/tasks/:id', (req, res) => {
-  const task = tasks.get(req.params.id);
-  if (!task) return res.status(404).json({ error: 'Task not found' });
-  return res.json(task);
-});
-
-app.post('/v1/tasks', (req, res) => {
-  const task = req.body;
-  if (!task || !task.id) {
-    return res.status(400).json({ error: 'Task must have an id' });
-  }
-  tasks.set(task.id, { ...task, receivedAt: new Date().toISOString() });
-  console.info(`[Core] Received task ${task.id} (type: ${task.type})`);
-  res.status(201).json({ ok: true, taskId: task.id });
+app.get("/health", (_req, res) => {
+  res.json({ status: "ok", uptime: process.uptime(), ts: new Date().toISOString() });
 });
 
 // ---------------------------------------------------------------------------
-// 404 handler
+// Global error handler
 // ---------------------------------------------------------------------------
-
-app.use((req, res) => {
-  res.status(404).json({ error: 'Not found', path: req.path });
-});
-
-// ---------------------------------------------------------------------------
-// Error handler
-// ---------------------------------------------------------------------------
-
-app.use((err, req, res, next) => {
-  console.error('[Core] Unhandled error:', err);
-  res.status(500).json({ error: 'Internal server error' });
+// eslint-disable-next-line no-unused-vars
+app.use((err, _req, res, _next) => {
+  console.error("[Core] Unhandled error:", err);
+  res.status(500).json({ ok: false, error: err.message || "Internal server error" });
 });
 
 // ---------------------------------------------------------------------------
 // Start
 // ---------------------------------------------------------------------------
-
 app.listen(PORT, () => {
-  console.info(`[Core] ✓ agent-x-core running on http://0.0.0.0:${PORT}`);
+  console.log(`\n[Core] Agent X Core running on port ${PORT}\n`);
+
+  // Start Agent Hermes after the server is up
+  try {
+    const hermes = require("../hermes/hermes-agent");
+    hermes.start();
+    console.log("[Core] Agent Hermes started.");
+  } catch (e) {
+    console.warn("[Core] Could not start Agent Hermes:", e.message);
+  }
 });
 
-module.exports = app;
+module.exports = app; // for testing

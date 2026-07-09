@@ -1,13 +1,33 @@
 {
+  "name": "agent-x",
+  "version": "1.0.0",
+  "description": "Agent X — Autonomous Income Infrastructure",
+  "main": "run.js",
+  "scripts": {
+    "start": "node run.js",
+    "dev": "nodemon run.js",
+    "core": "node agent-x-core/index.js",
+    "twin": "node digital-twin/index.js",
+    "test": "node hermes/hermes.test.js",
+    "test:hermes": "node hermes/hermes.test.js",
+    "test:registry": "node agent-x-core/registry/registry.test.js"
+  },
   "dependencies": {
     "axios": "^1.17.0",
     "bcryptjs": "^3.0.3",
+    "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
     "lowdb": "^7.0.1",
-    "nodemon": "^3.1.14",
-    "pm2": "^5.3.0",
-    "stripe": "^22.2.1"
+    "node-fetch": "^3.3.2",
+    "stripe": "^22.2.1",
+    "uuid": "^14.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }
