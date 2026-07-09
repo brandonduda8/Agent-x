@@ -28,6 +28,12 @@ The project targets deployment on both **Termux (Android)** and **standard Linux
 │  └────────┬──────────────────────────────────────────────┘  │
 │           │                                                  │
 │  ┌────────▼──────────────────────────────────────────────┐  │
+│  │           Agent Upgrade & Config Versioning Layer      │  │
+│  │  upgrade-manager.js │ config-version-store.js         │  │
+│  │  upgrade-api.js     │ config-schema-validator.js      │  │
+│  └────────┬──────────────────────────────────────────────┘  │
+│           │                                                  │
+│  ┌────────▼──────────────────────────────────────────────┐  │
 │  │                  Worker Agents (stdio/JSON)            │  │
 │  │  api-socket │ content-generator │ data-aggregator     │  │
 │  │  infrastructure │ orchestrator │ publisher            │  │
@@ -49,6 +55,7 @@ The project targets deployment on both **Termux (Android)** and **standard Linux
 | Execution Layer | `digital-twin/` | Pipeline runners, artifact generation |
 | Worker Agents | `agent-x-core/agents/` | Standalone stdio JSON processes |
 | Agent Registry | `agent-x-core/registry/` | Agent registration, heartbeat tracking, health monitoring |
+| Upgrade & Versioning | `agent-x-core/upgrade/` | Agent upgrade management, config versioning, schema validation |
 | Python Core | `core/` | Brain, state management, supervisor, LLM client |
 | Agent Modules | `agents/` | Python-based builder, planner, researcher, revenue agents |
 | Dashboard | `dashboard/` | Flask + SocketIO real-time monitoring UI |
@@ -80,6 +87,15 @@ The project targets deployment on both **Termux (Android)** and **standard Linux
 | `registry.js` | Core agent registry — stores agent metadata, tracks registration/deregistration, manages agent state map |
 | `heartbeat.js` | Heartbeat monitor — periodically checks agent liveness, marks agents as `dead`/`stale` when heartbeats are missed, triggers restart callbacks |
 | `registry-api.js` | Express router exposing registry REST endpoints (`GET /agents`, `POST /agents/register`, `POST /agents/:id/heartbeat`, `DELETE /agents/:id`) |
+
+### Agent Upgrade & Configuration Versioning (`agent-x-core/upgrade/`)
+
+| File | Purpose |
+|---|---|
+| `upgrade-manager.js` | Core upgrade orchestrator — manages agent upgrade lifecycle, coordinates version transitions, triggers rollback on failure |
+| `config-version-store.js` | Versioned configuration store — persists config snapshots with version numbers, supports diff and rollback to any prior version |
+| `upgrade-api.js` | Express router exposing upgrade/config REST endpoints (see Upgrade API section below) |
+| `config-schema-validator.js` | JSON Schema validation for agent configurations — enforces schema correctness before applying config versions |
 
 ### Core Worker Agents (`agent-x-core/agents/`)
 
@@ -152,6 +168,7 @@ The project targets deployment on both **Termux (Android)** and **standard Linux
 | `memory/state.json` | System state snapshot |
 | `memory/tasks.json` | Queued/completed task records |
 | `memory/registry.json` | Persisted agent registry snapshot (written by registry.js) |
+| `memory/config-versions/` | Directory of versioned config snapshots (written by config-version-store.js) |
 | `data/db.json` | General database (JSON flat file) |
 | `data/tasks.json` | Task definitions |
 | `data/revenue.json` | Revenue tracking data |
@@ -178,6 +195,7 @@ The project targets deployment on both **Termux (Android)** and **standard Linux
 | `nodemon` | ^3.1.14 | Development hot-reload |
 | `pm2` | ^5.3.0 | Production process manager |
 | `node-fetch` | ^3.3.2 | Optional fetch for communication layer |
+| `ajv` | latest | JSON Schema validation (used by config-schema-validator.js) |
 
 ### Python (Secondary Runtime)
 
@@ -264,86 +282,51 @@ All thresholds are configurable via environment variables.
 
 ---
 
-## Agent Communication Protocol
+## Agent Upgrade & Configuration Versioning System
 
-Worker agents follow a strict **stdio JSON line protocol**:
+### Overview
 
-### Request Envelope
+The Upgrade & Configuration Versioning system provides controlled, auditable agent upgrades with full config history, schema validation, and rollback support. It is mounted on `agent-x-core` and integrates with the registry to gate upgrades against agent liveness state.
+
+### Upgrade Lifecycle
+
+```
+PENDING → IN_PROGRESS → COMPLETE
+                │
+                └──► FAILED → ROLLED_BACK
+```
+
+| State | Meaning |
+|---|---|
+| `pending` | Upgrade requested but not yet started |
+| `in_progress` | Upgrade is actively being applied |
+| `complete` | Upgrade applied successfully |
+| `failed` | Upgrade encountered an error |
+| `rolled_back` | Automatic or manual rollback to prior version applied |
+
+### Config Version Schema
+
 ```json
 {
-  "action": "draft",
-  "requestId": "abc123",
-  "payload": {
-    "topic": "automation",
-    "audience": "founders",
-    "variant": "long"
-  }
+  "agentId": "uuid-v4",
+  "version": 3,
+  "config": { ... },
+  "schema": "agent-config-v1",
+  "appliedAt": "ISO8601",
+  "appliedBy": "upgrade-manager",
+  "changelog": "Description of what changed",
+  "previousVersion": 2
 }
 ```
 
-### Success Response
-```json
-{
-  "ok": true,
-  "requestId": "abc123",
-  "result": { ... }
-}
-```
+### Upgrade API (`/v1/upgrade`)
 
-### Failure Response
-```json
-{
-  "ok": false,
-  "error": "Description of error"
-}
-```
-
-### One-Shot Invocation Pattern
-```bash
-# api-socket agent
-printf '%s' '{"action":"get","requestId":"t1","payload":{"url":"https://httpbin.org/get"}}' \
-  | node ~/agent-x/agent-x-core/agents/api-socket.js
-
-# content-generator agent
-printf '%s' '{"action":"draft","requestId":"c1","payload":{"topic":"automation","audience":"founders","variant":"short"}}' \
-  | node ~/agent-x/agent-x-core/agents/content-generator.js
-
-# data-aggregator agent
-printf '%s' '{"action":"aggregate","requestId":"d1","payload":{"sourceUrls":["https://example.com"],"timeWindow":"24h"}}' \
-  | node ~/agent-x/agent-x-core/agents/data-aggregator.js
-```
-
-### Registry Heartbeat Pattern (HTTP)
-```bash
-# Register an agent
-curl -X POST http://localhost:3000/v1/registry/agents/register \
-  -H "Content-Type: application/json" \
-  -d '{"name":"content-generator","type":"worker","capabilities":["draft","email"]}'
-
-# Send a heartbeat
-curl -X POST http://localhost:3000/v1/registry/agents/{id}/heartbeat
-
-# List all agents
-curl http://localhost:3000/v1/registry/agents
-```
-
----
-
-## Coding Conventions
-
-### JavaScript
-
-- **Module system:** CommonJS (`require`/`module.exports`) — `"type": "commonjs"` in `agent-x-core/package.json`
-- **Agent structure:** Each agent is a **self-contained stdio process** — reads from stdin line-by-line, writes JSON to stdout
-- **Error handling:** Always return `{"ok": false, "error": "..."}` on failure — never throw unhandled rejections to stdout
-- **Naming:** `kebab-case` for filenames (e.g., `content-generator.js`, `api-socket.js`, `registry-api.js`)
-- **HTTP servers:** Express 5.x on defined ports (3000 = core, 3001 = digital-twin)
-- **Task IDs:** Use `uuid` package for all unique identifiers
-- **Registry modules:** Export a class or factory function; `registry.js` exports a singleton registry instance; `heartbeat.js` exports a `HeartbeatMonitor` class; `registry-api.js` exports an Express Router
-
-### Python
-
-- **Package structure:** `__init__.py` in each agent subdirectory (proper Python packages)
-- **Agent classes:** Each agent module exports a primary class named after its role (e.g., `BuilderAgent`, `PlannerAgent`)
-- **Dashboard:** Flask + SocketIO pattern — emit events via `socketio.emit("event", {...})`
--
+| Method | Endpoint | Description |
+|---|---|---|
+| `POST` | `/agents/:id/upgrade` | Initiate an upgrade for a specific agent |
+| `GET` | `/agents/:id/upgrade/status` | Get current upgrade status for an agent |
+| `POST` | `/agents/:id/upgrade/rollback` | Roll back agent to previous config version |
+| `GET` | `/agents/:id/config/versions` | List all config versions for an agent |
+| `GET` | `/agents/:id/config/versions/:version` | Retrieve a specific config version snapshot |
+| `POST` | `/agents/:id/config` | Apply a new config version (with schema validation) |
+| `GET`
