@@ -176,7 +176,7 @@ The project targets deployment on both **Termux (Android)** and **standard Linux
 | `state_manager.py` | Persistent state read/write |
 | `task_registry.py` | Task registration and lookup |
 | `loop_engine.py` | Autonomous execution loop |
-| `llm_client.py` | LLM API client abstraction |
+| `llm_client.py` | LLM API client abstraction with multi-provider fallback chain — attempts providers in priority order, falls back automatically on failure or unavailability |
 | `event_bus.py` | Python-side pub/sub event system |
 | `hub_bridge.py` | Bridge between Python and Node.js layers |
 
@@ -257,5 +257,3 @@ The project targets deployment on both **Termux (Android)** and **standard Linux
 | Library | Usage |
 |---|---|
 | `flask` | Dashboard HTTP server |
-| `flask-socketio` | Real-time WebSocket streaming |
-| `transformers` | H
