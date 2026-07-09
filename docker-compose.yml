@@ -1,35 +1,89 @@
-version: '3.8'
+version: '3.9'
 
 services:
+  # ─────────────────────────────────────────────────────────────────────────
+  # Agent X Core — Command Center (Port 3000)
+  # ─────────────────────────────────────────────────────────────────────────
   agent-x-core:
     build:
       context: .
       dockerfile: deployment/Dockerfile
+    command: node agent-x-core/index.js
     ports:
       - "3000:3000"
-    volumes:
-      - ./agent-x-core:/app/agent-x-core
-      - ./digital-twin:/app/digital-twin
     environment:
-      - DIGITAL_TWIN_URL=http://digital-twin:3001
+      - PORT=3000
+      - NODE_ENV=${NODE_ENV:-production}
+      # Zangi credentials
+      - ZANGI_API_KEY=${ZANGI_API_KEY}
+      - ZANGI_API_SECRET=${ZANGI_API_SECRET}
+      - ZANGI_APP_ID=${ZANGI_APP_ID}
+      - ZANGI_BASE_URL=${ZANGI_BASE_URL:-https://api.zangi.com/v1}
+      - ZANGI_WEBHOOK_SECRET=${ZANGI_WEBHOOK_SECRET}
+      - ZANGI_BROADCAST_CHANNEL_ID=${ZANGI_BROADCAST_CHANNEL_ID}
+      - ZANGI_DEBUG=${ZANGI_DEBUG:-false}
+      # Per-agent Zangi user IDs
+      - ZANGI_USER_ORCHESTRATOR=${ZANGI_USER_ORCHESTRATOR}
+      - ZANGI_USER_CONTENT_GENERATOR=${ZANGI_USER_CONTENT_GENERATOR}
+      - ZANGI_USER_DATA_AGGREGATOR=${ZANGI_USER_DATA_AGGREGATOR}
+      - ZANGI_USER_PUBLISHER=${ZANGI_USER_PUBLISHER}
+      - ZANGI_USER_INFRASTRUCTURE=${ZANGI_USER_INFRASTRUCTURE}
+      - ZANGI_USER_API_SOCKET=${ZANGI_USER_API_SOCKET}
+      - ZANGI_USER_WATCHDOG=${ZANGI_USER_WATCHDOG}
+      # Per-agent Zangi channel IDs
+      - ZANGI_CHANNEL_ORCHESTRATOR=${ZANGI_CHANNEL_ORCHESTRATOR}
+      - ZANGI_CHANNEL_CONTENT_GENERATOR=${ZANGI_CHANNEL_CONTENT_GENERATOR}
+      - ZANGI_CHANNEL_DATA_AGGREGATOR=${ZANGI_CHANNEL_DATA_AGGREGATOR}
+      - ZANGI_CHANNEL_PUBLISHER=${ZANGI_CHANNEL_PUBLISHER}
+      - ZANGI_CHANNEL_INFRASTRUCTURE=${ZANGI_CHANNEL_INFRASTRUCTURE}
+      - ZANGI_CHANNEL_API_SOCKET=${ZANGI_CHANNEL_API_SOCKET}
+      - ZANGI_CHANNEL_WATCHDOG=${ZANGI_CHANNEL_WATCHDOG}
+    volumes:
+      - ./data:/app/data
+      - ./memory:/app/memory
     restart: unless-stopped
-    networks:
-      - agent-x-net
 
+  # ─────────────────────────────────────────────────────────────────────────
+  # Digital Twin — Execution Layer (Port 3001)
+  # ─────────────────────────────────────────────────────────────────────────
   digital-twin:
     build:
       context: .
       dockerfile: deployment/Dockerfile
+    command: node digital-twin/index.js
     ports:
       - "3001:3001"
-    volumes:
-      - ./digital-twin:/app/digital-twin
     environment:
-      - NODE_ENV=production
+      - PORT=3001
+      - NODE_ENV=${NODE_ENV:-production}
+    volumes:
+      - ./data:/app/data
+      - ./memory:/app/memory
+      - ./generated:/app/generated
+    depends_on:
+      - agent-x-core
     restart: unless-stopped
-    networks:
-      - agent-x-net
 
-networks:
-  agent-x-net:
-    driver: bridge
+  # ─────────────────────────────────────────────────────────────────────────
+  # Zangi Webhook Listener — Standalone (Port 3002)
+  # ─────────────────────────────────────────────────────────────────────────
+  zangi-listener:
+    build:
+      context: .
+      dockerfile: deployment/Dockerfile
+    command: node webhook-listener/zangi-listener.js
+    ports:
+      - "3002:3002"
+    environment:
+      - ZANGI_API_KEY=${ZANGI_API_KEY}
+      - ZANGI_API_SECRET=${ZANGI_API_SECRET}
+      - ZANGI_APP_ID=${ZANGI_APP_ID}
+      - ZANGI_WEBHOOK_SECRET=${ZANGI_WEBHOOK_SECRET}
+      - ZANGI_BROADCAST_CHANNEL_ID=${ZANGI_BROADCAST_CHANNEL_ID}
+      - ZANGI_LISTENER_PORT=3002
+      - AGENT_X_CORE_URL=http://agent-x-core:3000
+    volumes:
+      - ./data:/app/data
+    depends_on:
+      - agent-x-core
+    restart: unless-stopped

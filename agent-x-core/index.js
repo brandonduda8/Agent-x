@@ -1,112 +1,144 @@
 /**
- * agent-x-core/index.js
- * =============================================================================
- * Command Center — Express HTTP API  (Port 3000)
+ * Agent X Core — Command Center
+ * Port: 3000
  *
- * Mounts:
- *   /v1/registry  — Agent registry REST API  (agent registration, heartbeats)
- *   /api/agents   — Upgrade & config-versioning API
- *   /api          — General agent route (agents.js)
- *   /health       — Liveness probe
- * =============================================================================
+ * Express API server for task routing, agent orchestration,
+ * registry management, upgrade management, and Zangi messaging.
  */
 
 'use strict';
 
 require('dotenv').config();
 
-const express  = require('express');
-const cors     = require('cors');
-const path     = require('path');
+const express = require('express');
+const cors = require('cors');
+const path = require('path');
 
-const app  = express();
+const app = express();
 const PORT = process.env.PORT || 3000;
 
 // ---------------------------------------------------------------------------
-// Global middleware
+// Middleware
 // ---------------------------------------------------------------------------
 
 app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
 
-// Request logger (lightweight)
-app.use((req, _res, next) => {
-  console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
-  next();
+// Note: /api/zangi/webhook uses its own rawBodyCapture middleware and must NOT
+// be pre-parsed by express.json(). We apply JSON parsing only to other routes.
+app.use((req, res, next) => {
+  // Skip JSON body parsing for the Zangi webhook path — it does its own.
+  if (req.path === '/api/zangi/webhook' || req.path === '/v1/zangi/webhook') {
+    return next();
+  }
+  express.json()(req, res, next);
+});
+
+app.use(express.urlencoded({ extended: true }));
+
+// ---------------------------------------------------------------------------
+// Health / root
+// ---------------------------------------------------------------------------
+
+app.get('/', (req, res) => {
+  res.json({
+    service: 'agent-x-core',
+    status: 'running',
+    port: PORT,
+    version: process.env.npm_package_version || '1.0.0',
+  });
+});
+
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok', uptime: process.uptime() });
 });
 
 // ---------------------------------------------------------------------------
 // Routes
 // ---------------------------------------------------------------------------
 
-// Liveness probe
-app.get('/health', (_req, res) => {
-  res.json({ ok: true, service: 'agent-x-core', ts: new Date().toISOString() });
+// Agent registry REST API
+try {
+  const registryApi = require('./registry/registry-api');
+  app.use('/v1/registry', registryApi);
+  console.info('[Core] Mounted registry API at /v1/registry');
+} catch (err) {
+  console.warn('[Core] Registry API not loaded:', err.message);
+}
+
+// Upgrade & config versioning API
+try {
+  const upgradeApi = require('./routes/upgrade');
+  app.use('/v1/upgrade', upgradeApi);
+  console.info('[Core] Mounted upgrade API at /v1/upgrade');
+} catch (err) {
+  console.warn('[Core] Upgrade API not loaded:', err.message);
+}
+
+// Agent routes
+try {
+  const agentsRoute = require('./routes/agents');
+  app.use('/v1/agents', agentsRoute);
+  console.info('[Core] Mounted agents route at /v1/agents');
+} catch (err) {
+  console.warn('[Core] Agents route not loaded:', err.message);
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// Zangi Communication Layer
+// ────────────────────────────────────────────────────────────────────────────
+try {
+  const zangiRouter = require('./routes/zangi');
+  app.use('/api/zangi', zangiRouter);
+  // Also expose under versioned path for consistency
+  app.use('/v1/zangi', zangiRouter);
+  console.info('[Core] ✓ Mounted Zangi API at /api/zangi and /v1/zangi');
+} catch (err) {
+  console.error('[Core] ✗ Failed to mount Zangi API:', err.message);
+}
+// ────────────────────────────────────────────────────────────────────────────
+
+// ---------------------------------------------------------------------------
+// Task API (internal use — agents post results here)
+// ---------------------------------------------------------------------------
+
+// Simple in-memory task store (replace with lowdb / db.json in production)
+const tasks = new Map();
+
+app.get('/v1/tasks', (req, res) => {
+  res.json({ tasks: [...tasks.values()] });
 });
 
-// Agent registry  (registration, heartbeat, list, deregister)
-try {
-  const registryRouter = require('./registry/registry-api');
-  app.use('/v1/registry', registryRouter);
-  console.log('[index] Mounted /v1/registry');
-} catch (err) {
-  console.warn('[index] registry-api not available:', err.message);
-}
-
-// Upgrade & config-versioning API
-// Handles /api/agents/:id/upgrade, /api/agents/:id/configs, /api/audit, etc.
-try {
-  const upgradeRouter = require('./routes/upgrade');
-  app.use('/api/agents', upgradeRouter);
-  // Also expose audit at top-level /api/audit for convenience
-  app.use('/api', upgradeRouter);
-  console.log('[index] Mounted /api/agents (upgrade + config versioning)');
-} catch (err) {
-  console.warn('[index] upgrade router not available:', err.message);
-}
-
-// General agents route
-try {
-  const agentsRouter = require('./routes/agents');
-  app.use('/api/agents', agentsRouter);
-  console.log('[index] Mounted /api/agents (general)');
-} catch (err) {
-  console.warn('[index] agents route not available:', err.message);
-}
-
-// ---------------------------------------------------------------------------
-// Heartbeat monitor — start on boot
-// ---------------------------------------------------------------------------
-
-try {
-  const HeartbeatMonitor = require('./registry/heartbeat-monitor');
-  const registry         = require('./registry/agent-registry');
-
-  const monitor = new HeartbeatMonitor();
-
-  // When an agent goes dead, log it (watchdog can subscribe separately)
-  monitor.onDead(agent => {
-    console.error(`[heartbeat] DEAD: ${agent.name} (${agent.id})`);
-  });
-
-  monitor.start();
-} catch (err) {
-  console.warn('[index] Heartbeat monitor not started:', err.message);
-}
-
-// ---------------------------------------------------------------------------
-// 404 / global error handler
-// ---------------------------------------------------------------------------
-
-app.use((_req, res) => {
-  res.status(404).json({ ok: false, error: 'Not found' });
+app.get('/v1/tasks/:id', (req, res) => {
+  const task = tasks.get(req.params.id);
+  if (!task) return res.status(404).json({ error: 'Task not found' });
+  return res.json(task);
 });
 
-// eslint-disable-next-line no-unused-vars
-app.use((err, _req, res, _next) => {
-  console.error('[index] Unhandled error:', err);
-  res.status(500).json({ ok: false, error: err.message || 'Internal server error' });
+app.post('/v1/tasks', (req, res) => {
+  const task = req.body;
+  if (!task || !task.id) {
+    return res.status(400).json({ error: 'Task must have an id' });
+  }
+  tasks.set(task.id, { ...task, receivedAt: new Date().toISOString() });
+  console.info(`[Core] Received task ${task.id} (type: ${task.type})`);
+  res.status(201).json({ ok: true, taskId: task.id });
+});
+
+// ---------------------------------------------------------------------------
+// 404 handler
+// ---------------------------------------------------------------------------
+
+app.use((req, res) => {
+  res.status(404).json({ error: 'Not found', path: req.path });
+});
+
+// ---------------------------------------------------------------------------
+// Error handler
+// ---------------------------------------------------------------------------
+
+app.use((err, req, res, next) => {
+  console.error('[Core] Unhandled error:', err);
+  res.status(500).json({ error: 'Internal server error' });
 });
 
 // ---------------------------------------------------------------------------
@@ -114,11 +146,7 @@ app.use((err, _req, res, _next) => {
 // ---------------------------------------------------------------------------
 
 app.listen(PORT, () => {
-  console.log(`[agent-x-core] Listening on port ${PORT}`);
-  console.log(`  Health : http://localhost:${PORT}/health`);
-  console.log(`  Registry: http://localhost:${PORT}/v1/registry/agents`);
-  console.log(`  Upgrade : http://localhost:${PORT}/api/agents/:id/upgrade`);
-  console.log(`  Audit   : http://localhost:${PORT}/api/agents/audit`);
+  console.info(`[Core] ✓ agent-x-core running on http://0.0.0.0:${PORT}`);
 });
 
 module.exports = app;
