@@ -1,177 +1,181 @@
+/**
+ * Agent X — Command Center (agent-x-core)
+ * =============================================================================
+ * Express 5 server, Port 3000 (default).
+ *
+ * Routes
+ * ──────
+ * GET  /health          — liveness probe
+ * POST /v1/tasks        — submit a task to the orchestrator
+ * GET  /v1/status       — overall system status
+ *
+ * GET    /api/agents                        — list agents
+ * POST   /api/agents                        — register agent
+ * GET    /api/agents/:id                    — get agent
+ * PATCH  /api/agents/:id                    — update agent
+ * DELETE /api/agents/:id                    — remove agent
+ * POST   /api/agents/:id/heartbeat          — liveness ping
+ * GET    /api/agents/heartbeat/summary      — registry-wide counts
+ * =============================================================================
+ */
+
+'use strict';
+
 require('dotenv').config();
-const express = require('express');
-const cors = require('cors');
-const axios = require('axios');
+
+const express  = require('express');
+const cors     = require('cors');
 const { v4: uuidv4 } = require('uuid');
-const fs = require('fs');
-const path = require('path');
+const path     = require('path');
+const fs       = require('fs');
 
-const app = express();
+// Internal modules
+const agentsRouter  = require('./routes/agents');
+const hbMonitor     = require('./registry/heartbeat-monitor');
+
+// --------------------------------------------------------------------------- #
+// App setup
+// --------------------------------------------------------------------------- #
+const app  = express();
+const PORT = parseInt(process.env.PORT || '3000', 10);
+
 app.use(cors());
-app.use(express.json({ limit: '10mb' }));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-const TASKS_FILE = path.join(__dirname, 'tasks.json');
-const PRODUCTS_FILE = path.join(__dirname, '..', 'products', 'catalog', 'catalog.json');
+// --------------------------------------------------------------------------- #
+// Request logger (dev-friendly one-liner per request)
+// --------------------------------------------------------------------------- #
+app.use((req, _res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl}`);
+  next();
+});
 
-function readTasks() {
-  try {
-    if (!fs.existsSync(TASKS_FILE)) return [];
-    return JSON.parse(fs.readFileSync(TASKS_FILE, 'utf8'));
-  } catch (e) {
-    console.error('Failed to read tasks:', e.message);
-    return [];
-  }
-}
-
-function readProducts() {
-  try {
-    if (!fs.existsSync(PRODUCTS_FILE)) return [];
-    const raw = JSON.parse(fs.readFileSync(PRODUCTS_FILE, 'utf8'));
-    return Array.isArray(raw.catalog) ? raw.catalog : [];
-  } catch (e) {
-    console.error('Failed to read products:', e.message);
-    return [];
-  }
-}
-
-function writeTasks(tasks) {
-  try {
-    fs.writeFileSync(TASKS_FILE, JSON.stringify(tasks, null, 2), 'utf8');
-  } catch (e) {
-    console.error('Failed to write tasks:', e.message);
-  }
-}
-
-function appendEvent(taskId, event) {
-  const tasks = readTasks();
-  const task = tasks.find(t => t.id === taskId);
-  if (!task) return;
-  task.events.push({ ...event, ts: new Date().toISOString() });
-  task.status = event.status || task.status;
-  task.updatedAt = new Date().toISOString();
-  writeTasks(tasks);
-}
-
-const OVERMIND_URL = process.env.OVERMIND_URL || 'http://localhost:3010';
-
-async function postToOvermind(event) {
-  try {
-    await axios.post(`${OVERMIND_URL}/events`, event, { timeout: 5000 });
-  } catch (e) {
-    // non-fatal: Overmind may be restarting
-  }
-}
-
-app.get('/health', (req, res) => {
+// --------------------------------------------------------------------------- #
+// Health check
+// --------------------------------------------------------------------------- #
+app.get('/health', (_req, res) => {
   res.json({
-    service: 'agent-x-command-center',
-    version: '1.0.0',
-    uptime: process.uptime(),
-    tasks: readTasks().length
+    ok      : true,
+    service : 'agent-x-core',
+    port    : PORT,
+    uptime  : process.uptime(),
+    time    : new Date().toISOString(),
   });
 });
 
-app.post('/v1/tasks', async (req, res) => {
+// --------------------------------------------------------------------------- #
+// Task submission  (stub — wires into orchestrator)
+// --------------------------------------------------------------------------- #
+app.post('/v1/tasks', (req, res) => {
+  const { type, payload } = req.body || {};
+
+  if (!type) {
+    return res.status(422).json({ ok: false, error: '"type" is required' });
+  }
+
   const task = {
-    id: uuidv4(),
-    type: req.body.type || 'generic',
-    payload: req.body.payload || {},
-    status: 'queued',
-    priority: req.body.priority || 'normal',
-    webhook: req.body.webhook || null,
-    createdById: req.body.createdById || 'system',
-    events: [{ type: 'created', detail: 'Task queued for execution' }],
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    completedAt: null,
-    result: null
+    id        : uuidv4(),
+    type,
+    payload   : payload || {},
+    status    : 'queued',
+    created_at: new Date().toISOString(),
   };
 
-  const tasks = readTasks();
-  tasks.push(task);
-  writeTasks(tasks);
-
-  console.log('[TASK]', task.id, task.type, task.status);
-
-  setImmediate(() => executeTask(task));
-  res.status(202).json({ taskId: task.id, status: task.status });
-});
-
-app.get('/v1/products', (req, res) => {
-  const products = readProducts();
-  res.json({ products });
-});
-
-app.get('/v1/tasks/:id', (req, res) => {
-  const tasks = readTasks();
-  const task = tasks.find(t => t.id === req.params.id);
-  if (!task) return res.status(404).json({ error: 'Task not found' });
-  res.json(task);
-});
-
-app.get('/v1/tasks', (req, res) => {
-  const tasks = readTasks();
-  const limit = parseInt(req.query.limit || '50');
-  const offset = parseInt(req.query.offset || '0');
-  const type = req.query.type;
-  let filtered = type ? tasks.filter(t => t.type === type) : tasks;
-  res.json(filtered.slice(offset, offset + limit));
-});
-
-async function executeTask(task) {
-  const tasks = readTasks();
-  const idx = tasks.findIndex(t => t.id === task.id);
-  if (idx === -1) return;
-  tasks[idx].status = 'running';
-  tasks[idx].events.push({ type: 'started' });
-  writeTasks(tasks);
-  postToOvermind({ type: 'agent_x_task_started', taskId: task.id, source: 'agent-x-core' });
-
+  // Persist to tasks.json
   try {
-    const result = await callDigitalTwin(task);
-    tasks[idx].status = 'completed';
-    tasks[idx].result = result;
-    tasks[idx].events.push({ type: 'completed', detail: result?.summary || 'Task finished' });
-    tasks[idx].completedAt = new Date().toISOString();
-    writeTasks(tasks);
-    postToOvermind({ type: 'agent_x_task_completed', taskId: task.id, source: 'agent-x-core', result });
-
-    if (task.webhook) {
-      await axios.post(task.webhook, {
-        taskId: task.id,
-        status: 'completed',
-        result
-      }).catch(e => console.error('[WEBHOOK FAIL]', e.message));
-    }
-  } catch (err) {
-    tasks[idx].status = 'failed';
-    tasks[idx].events.push({ type: 'error', detail: err.message });
-    tasks[idx].updatedAt = new Date().toISOString();
-    writeTasks(tasks);
-    postToOvermind({ type: 'agent_x_task_failed', taskId: task.id, source: 'agent-x-core', error: err.message });
-
-    if (task.webhook) {
-      await axios.post(task.webhook, {
-        taskId: task.id,
-        status: 'failed',
-        error: err.message
-      }).catch(e => console.error('[WEBHOOK FAIL]', e.message));
-    }
+    const tasksPath = path.resolve(__dirname, 'tasks.json');
+    let tasks = [];
+    try { tasks = JSON.parse(fs.readFileSync(tasksPath, 'utf8')); } catch (_) {}
+    if (!Array.isArray(tasks)) tasks = [];
+    tasks.push(task);
+    fs.writeFileSync(tasksPath, JSON.stringify(tasks, null, 2), 'utf8');
+  } catch (e) {
+    console.error('[tasks] Could not persist task:', e.message);
   }
-}
 
-async function callDigitalTwin(task) {
-  const twinUrl = process.env.DIGITAL_TWIN_URL || 'http://localhost:3001';
-  const response = await axios.post(`${twinUrl}/execute`, {
-    taskId: task.id,
-    type: task.type,
-    payload: task.payload
-  }, { timeout: 120_000 });
-  return response.data;
-}
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`[AGENT X CORE] online http://0.0.0.0:${PORT}`);
-  console.log(`[TWIN INTEGRATION] target ${process.env.DIGITAL_TWIN_URL || 'http://localhost:3001'}`);
+  res.status(201).json({ ok: true, data: { task } });
 });
+
+// --------------------------------------------------------------------------- #
+// System status
+// --------------------------------------------------------------------------- #
+app.get('/v1/status', (_req, res) => {
+  const summary = hbMonitor.summary();
+  res.json({
+    ok     : true,
+    data   : {
+      service  : 'agent-x-core',
+      uptime   : process.uptime(),
+      time     : new Date().toISOString(),
+      registry : summary,
+      monitor  : {
+        running   : hbMonitor.isRunning,
+        tickCount : hbMonitor.tickCount,
+        intervalMs: hbMonitor.intervalMs,
+        staleMs   : hbMonitor.staleMs,
+      },
+    },
+  });
+});
+
+// --------------------------------------------------------------------------- #
+// Agent Registry routes
+// --------------------------------------------------------------------------- #
+app.use('/api/agents', agentsRouter);
+
+// --------------------------------------------------------------------------- #
+// 404 fallback
+// --------------------------------------------------------------------------- #
+app.use((_req, res) => {
+  res.status(404).json({ ok: false, error: 'Route not found' });
+});
+
+// --------------------------------------------------------------------------- #
+// Global error handler
+// --------------------------------------------------------------------------- #
+// eslint-disable-next-line no-unused-vars
+app.use((err, _req, res, _next) => {
+  console.error('[error]', err);
+  res.status(500).json({ ok: false, error: err.message || 'Internal server error' });
+});
+
+// --------------------------------------------------------------------------- #
+// Start
+// --------------------------------------------------------------------------- #
+const server = app.listen(PORT, () => {
+  console.log(`[agent-x-core] Listening on port ${PORT}`);
+
+  // Start heartbeat monitor once the server is up
+  hbMonitor.start();
+
+  hbMonitor.on('stale', ({ agents }) => {
+    console.warn(
+      `[heartbeat-monitor] ⚠️  ${agents.length} agent(s) marked stale:`,
+      agents.map((a) => `${a.name} (${a.id})`).join(', '),
+    );
+  });
+
+  hbMonitor.on('error', (e) => {
+    console.error('[heartbeat-monitor] Internal error:', e.message);
+  });
+});
+
+// --------------------------------------------------------------------------- #
+// Graceful shutdown
+// --------------------------------------------------------------------------- #
+const shutdown = (signal) => {
+  console.log(`\n[agent-x-core] ${signal} received — shutting down…`);
+  hbMonitor.stop();
+  server.close(() => {
+    console.log('[agent-x-core] Server closed.');
+    process.exit(0);
+  });
+  // Force exit if close hangs
+  setTimeout(() => process.exit(1), 5000).unref();
+};
+
+process.on('SIGTERM', () => shutdown('SIGTERM'));
+process.on('SIGINT',  () => shutdown('SIGINT'));
+
+module.exports = { app, server };

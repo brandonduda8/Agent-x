@@ -2,9 +2,9 @@
 
 ## Project Overview
 
-Agent X is an **autonomous income infrastructure** system designed to run AI-powered agents that generate revenue through content creation, data aggregation, product publishing, and Stripe-based commerce. The system is built to operate continuously (including on mobile via Termux), orchestrate multiple specialized agents, and expose dashboards and APIs for monitoring and control.
+Agent X is an **autonomous income infrastructure** system designed to operate as a self-directed, multi-agent platform for generating revenue through automated content creation, data aggregation, product publishing, and service orchestration. The system runs persistently, executes tasks without manual intervention, and integrates with external services like Stripe for payments and webhooks for event-driven workflows.
 
-The project blends a **Node.js microservices core** with a **Python intelligence/dashboard layer**, connected through shared memory files, JSON messaging, and HTTP APIs.
+The project targets deployment on both **Termux (Android)** and **standard Linux environments**, with Docker support for containerized production deployments.
 
 ---
 
@@ -13,282 +13,337 @@ The project blends a **Node.js microservices core** with a **Python intelligence
 ### High-Level Design
 
 ```
-┌─────────────────────────────────────────────────────┐
-│                   Agent X System                    │
-│                                                     │
-│  ┌───────────────┐      ┌──────────────────────┐   │
-│  │ agent-x-core  │◄────►│    digital-twin      │   │
-│  │  (Node.js)    │      │    (Node.js)         │   │
-│  │  Port: 3000   │      │    Port: 3001        │   │
-│  └───────┬───────┘      └──────────────────────┘   │
-│          │                                          │
-│  ┌───────▼───────────────────────────────────────┐ │
-│  │              Worker Agents (stdio JSON)        │ │
-│  │  api-socket │ content-generator │ data-agg... │ │
-│  └───────────────────────────────────────────────┘ │
-│                                                     │
-│  ┌────────────────┐     ┌──────────────────────┐   │
-│  │ Python Layer   │     │  Dashboard (Flask)   │   │
-│  │ core/*.py      │     │  dashboard/app.py    │   │
-│  │ agents/*.py    │     │  Port: 3001          │   │
-│  └────────────────┘     └──────────────────────┘   │
-└─────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│                        Agent X System                        │
+│                                                             │
+│  ┌──────────────────┐        ┌──────────────────────────┐  │
+│  │  agent-x-core    │◄──────►│      digital-twin        │  │
+│  │  (Command Center)│        │   (Execution Layer)      │  │
+│  │  Port: 3000      │        │   Port: 3001             │  │
+│  └────────┬─────────┘        └──────────────────────────┘  │
+│           │                                                  │
+│  ┌────────▼──────────────────────────────────────────────┐  │
+│  │              Agent Registry & Heartbeat System         │  │
+│  │  registry.js │ heartbeat.js │ registry-api.js         │  │
+│  └────────┬──────────────────────────────────────────────┘  │
+│           │                                                  │
+│  ┌────────▼──────────────────────────────────────────────┐  │
+│  │                  Worker Agents (stdio/JSON)            │  │
+│  │  api-socket │ content-generator │ data-aggregator     │  │
+│  │  infrastructure │ orchestrator │ publisher            │  │
+│  └───────────────────────────────────────────────────────┘  │
+│                                                             │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐ │
+│  │  dashboard  │  │  webhooks   │  │  stripe-catalog     │ │
+│  │  (Flask/    │  │  listener   │  │  (Payment Layer)    │ │
+│  │  SocketIO)  │  │  (Node.js)  │  │                     │ │
+│  └─────────────┘  └─────────────┘  └─────────────────────┘ │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-### Service Breakdown
+### Layer Breakdown
 
-| Service | Runtime | Port | Role |
-|---|---|---|---|
-| `agent-x-core` | Node.js | 3000 | Command center, task API, orchestrator |
-| `digital-twin` | Node.js | 3001 | Execution layer, pipelines, artifacts |
-| `dashboard` | Python/Flask | 3001* | Real-time UI via SocketIO |
-| `communication` | Node.js | — | Shared packet schema + sender |
-| `webhook-listener` | Node.js | — | Stripe/external webhook ingestion |
-| `stripe-catalog` | Node.js | — | Stripe product catalog integration |
-
-> *Dashboard may conflict with digital-twin on port 3001 — check `PORT` env var.
+| Layer | Directory | Role |
+|---|---|---|
+| Command Center | `agent-x-core/` | Express API, task routing, agent orchestration |
+| Execution Layer | `digital-twin/` | Pipeline runners, artifact generation |
+| Worker Agents | `agent-x-core/agents/` | Standalone stdio JSON processes |
+| Agent Registry | `agent-x-core/registry/` | Agent registration, heartbeat tracking, health monitoring |
+| Python Core | `core/` | Brain, state management, supervisor, LLM client |
+| Agent Modules | `agents/` | Python-based builder, planner, researcher, revenue agents |
+| Dashboard | `dashboard/` | Flask + SocketIO real-time monitoring UI |
+| Products | `products/` | Product factory, catalog, publishing, order management |
+| Blueprints | `blueprints/` | Reusable revenue module templates |
+| Communication | `communication/` | Shared inter-service packet schema |
+| Execution | `execution/` | Stripe integration, webhook handling |
+| Deployment | `deployment/` | Dockerfile, systemd service files, Termux boot scripts |
 
 ---
 
-## Termux Compatibility
+## Key Files
 
-The system is explicitly designed to run on **Android via Termux**. A dedicated audit and compatibility pass has been completed. Key patterns and constraints:
+### Entry Points
 
-### Termux-Specific Constraints
-- **No `systemd`**: Termux does not support systemd. Service management uses PM2 (Node.js) or manual process supervision scripts instead.
-- **No `docker`**: Docker is not available in Termux. All services run as native processes.
-- **Home directory**: Termux home is `/data/data/com.termux/files/home` — all hardcoded paths must use `$HOME` or dynamic resolution, never `/root` or `/home/user`.
-- **Package manager**: `pkg` (not `apt`) is the Termux package manager. Install scripts must use `pkg install` for system dependencies.
-- **Python binary**: May be `python` or `python3` depending on Termux version — scripts should detect or default to `python3`.
-- **Node binary**: Available via `pkg install nodejs`.
-- **Foreground services**: Long-running processes should use `termux-wake-lock` to prevent Android from killing them.
-- **Storage permissions**: File I/O outside Termux home requires `termux-setup-storage`.
+| File | Purpose |
+|---|---|
+| `agent-x-core/index.js` | Main command center server (Express, Port 3000) |
+| `digital-twin/index.js` | Execution layer server (Express, Port 3001) |
+| `dashboard/app.py` | Real-time Flask dashboard with SocketIO |
+| `app.py` | Standalone sentiment analysis demo (HuggingFace Transformers) |
+| `run.js` | Top-level JS runner |
+| `run.py` | Top-level Python runner |
 
-### Termux Bootstrap / Startup
-- **`setup.sh`**: Primary Termux bootstrap setup script — installs all dependencies (Node.js, Python, PM2), creates required directories, copies `.env` template, and starts all services. Located at repo root.
-- **`deployment/termux-boot.sh`**: Auto-start script for Termux:Boot addon — launches all services on device boot.
-- Scripts must be POSIX-compatible (`#!/bin/sh` or `#!/bin/bash` with bash verified available).
-- Avoid GNU-specific flags not present in Termux's busybox utilities.
+### Agent Registry & Heartbeat System (`agent-x-core/registry/`)
 
-### Termux-Safe Scripting Patterns
-```bash
-# Use $HOME not hardcoded paths
-cd "$HOME/agent-x"
+| File | Purpose |
+|---|---|
+| `registry.js` | Core agent registry — stores agent metadata, tracks registration/deregistration, manages agent state map |
+| `heartbeat.js` | Heartbeat monitor — periodically checks agent liveness, marks agents as `dead`/`stale` when heartbeats are missed, triggers restart callbacks |
+| `registry-api.js` | Express router exposing registry REST endpoints (`GET /agents`, `POST /agents/register`, `POST /agents/:id/heartbeat`, `DELETE /agents/:id`) |
 
-# Detect python
-PYTHON=$(command -v python3 || command -v python)
+### Core Worker Agents (`agent-x-core/agents/`)
 
-# Use pkg for installs in setup scripts
-pkg install nodejs python -y
+| File | Purpose |
+|---|---|
+| `orchestrator.js` | Coordinates agent task routing and execution |
+| `api-socket.js` | Outbound HTTP GET/POST with headers and timeout control |
+| `content-generator.js` | Drafts copy, posts, emails for monetization |
+| `data-aggregator.js` | Fetches datasets, summarizes health, returns artifacts |
+| `infrastructure.js` | Service lifecycle, env sanity checks, network probes |
+| `publisher.js` | Publishes content/products to external destinations |
+| `watchdog.js` | Monitors agent health and triggers restarts |
+| `status-saver.py` | Persists agent status to disk |
+| `orchestrator.run.py` | Python wrapper to launch orchestrator |
+| `Status.cli.py` | CLI tool for viewing agent status |
 
-# Wake lock for long-running agents
-termux-wake-lock
-node agent-x-core/index.js &
-```
+### Python Core Layer (`core/`)
 
-### Process Management on Termux
-- **PM2** is the preferred process manager for Node.js services on Termux.
-- Python agents can be managed via `process-manager.py` or launched directly with `nohup`.
-- No systemd `.service` files are used in Termux deployments (those exist only for Linux server deployments).
+| File | Purpose |
+|---|---|
+| `brain.js` | JS-side brain/decision logic |
+| `intelligence_brain.py` | Python AI decision engine |
+| `revenue_brain.py` | Revenue-focused decision logic |
+| `revenue_engine.py` | Revenue execution and optimization |
+| `supervisor.py` | Agent supervision and lifecycle management |
+| `state_manager.py` | Persistent state read/write |
+| `task_registry.py` | Task registration and lookup |
+| `loop_engine.py` | Autonomous execution loop |
+| `llm_client.py` | LLM API client abstraction |
+| `event_bus.py` | Python-side pub/sub event system |
+| `hub_bridge.py` | Bridge between Python and Node.js layers |
 
-### setup.sh — Bootstrap Script (Root)
-The root-level `setup.sh` is the **primary Termux onboarding entrypoint**. It performs:
-1. `pkg install` of system dependencies (nodejs, python, git, curl)
-2. `npm install` for all Node.js packages
-3. `pip install` for Python dependencies
-4. Directory creation (`memory/`, `data/`, `generated/`, `products/deliverables/`, `logs/`)
-5. `.env` file creation from template if not present
-6. PM2 installation and service startup
-7. `termux-wake-lock` invocation for persistent background execution
+### Python Agent Modules (`agents/`)
 
-Conventions:
-- Uses `#!/bin/bash` with a fallback check for bash availability
-- All paths relative to `$HOME` or the script's own directory
-- Idempotent: safe to re-run without destructive side effects
-- Prints status messages with emoji prefixes for readability in Termux terminal
+| File | Purpose |
+|---|---|
+| `builder/builder_agent.py` | Builds projects and artifacts |
+| `planner/planner_agent.py` | Plans tasks and roadmaps |
+| `researcher/researcher_agent.py` | Researches topics and data |
+| `revenue/revenue_agent.py` | Revenue generation strategies |
+| `titan_architect.md` | Architecture blueprint document |
 
-### Dev Server & Build Testing in Termux
-A dedicated test pass (`feat/termux-dev-server-build-tests`) was completed to validate the dev server startup and build process under Termux constraints. Key findings and conventions established:
+### Products Layer (`products/`)
 
-- **Dev server startup**: `agent-x-core` (`node index.js` or via PM2) must be validated to bind and respond on port 3000 before dependent services start. Health-check pattern: `curl -s http://localhost:3000/health` with retry loop.
-- **Build process**: No traditional "build step" exists (no transpilation/bundling for Node.js core); Python agents run directly. "Build" in this context means dependency installation (`npm install`, `pip install`) + directory scaffolding.
-- **Test scripts**: Added lightweight smoke-test scripts to verify server responsiveness and agent process launch in Termux without requiring a full CI environment.
-- **Port conflict detection**: Scripts now check for existing processes on ports 3000/3001 before starting services to avoid silent failures in Termux's single-session environment.
-- **Environment validation**: Pre-flight checks confirm required env vars (`STRIPE_SECRET_KEY`, etc.) are present in `.env` before service launch; missing vars emit warnings but do not hard-fail, allowing partial operation.
-- **nodemon excluded from Termux**: `nodemon` is development-only and should not be used in Termux PM2 ecosystem configs — use `node` directly in `ecosystem.config.js` for Termux targets.
+| File | Purpose |
+|---|---|
+| `product-factory.py` | Generates product definitions |
+| `product-orchestrator.py` | Coordinates product lifecycle |
+| `product-publisher.py` | Publishes products to storefront |
+| `batch-generate.py` | Batch product generation |
+| `order-manifest.py` | Manages order records |
+| `catalog/catalog.json` | Product catalog data |
+| `storefront.html` | Frontend storefront UI |
 
----
+### Infrastructure & Deployment
 
-## Repository Structure
+| File | Purpose |
+|---|---|
+| `deployment/Dockerfile` | Multi-service Docker image (Node 20 Alpine) |
+| `docker-compose.yml` | Orchestrates agent-x-core + digital-twin services |
+| `deployment/agent-x-core.service` | systemd service for core |
+| `deployment/digital-twin.service` | systemd service for digital-twin |
+| `deployment/termux-boot.sh` | Auto-start script for Termux |
 
-```
-agent-x/
-│
-├── setup.sh                    # PRIMARY Termux bootstrap — install deps + start services
-├── agent-x-core/               # Primary command center (Node.js + Express)
-│   ├── index.js                # Entry point — Express API server
-│   ├── tasks.json              # Task queue/definitions
-│   ├── package.json            # Dependencies: axios, cors, dotenv, express, uuid
-│   └── agents/                 # Worker agents (stdio JSON processes)
-│       ├── api-socket.js       # Outbound HTTP GET/POST agent
-│       ├── content-generator.js# Copy/post/email drafting agent
-│       ├── data-aggregator.js  # Dataset fetch + summarize agent
-│       ├── infrastructure.js   # Service lifecycle + env checks
-│       ├── orchestrator.js     # Coordinates agent execution
-│       ├── orchestrator.run.py # Python orchestrator runner
-│       ├── publisher.js        # Content publishing agent
-│       ├── watchdog.js         # Process health monitor
-│       ├── status-saver.py     # Writes status to disk
-│       ├── Status.cli.py       # CLI status viewer
-│       └── run_one.py          # Single agent launcher
-│
-├── agent-x-core/Status.show.py # Status display utility
-│
-├── digital-twin/               # Execution layer
-│   └── index.js                # Pipeline runner + artifact manager
-│
-├── communication/              # Shared messaging layer
-│   ├── packet-schema.js        # JSON envelope schema
-│   └── package.json
-│
-├── blueprints/                 # Reusable revenue modules
-│   ├── content-pipeline/       # Blog/copy generation pipeline
-│   │   └── runner.js
-│   └── data-aggregator/        # HTTP data collection pipeline
-│       └── runner.js
-│
-├── core/                       # Python intelligence core
-│   ├── agent.js                # JS agent base
-│   ├── brain.js                # JS brain logic
-│   ├── intelligence_brain.py   # Python AI brain
-│   ├── revenue_brain.py        # Revenue logic
-│   ├── revenue_engine.py       # Revenue execution
-│   ├── loop_engine.py          # Continuous loop control
-│   ├── llm_client.py           # LLM API abstraction
-│   ├── supervisor.py           # Agent supervision
-│   ├── state_manager.py        # Global state management
-│   ├── task_registry.py        # Task registration + listing
-│   ├── event_bus.py            # Python event pub/sub
-│   ├── hub_bridge.py           # Cross-service bridge
-│   ├── database.js             # JS data layer
-│   └── db.js                   # JS DB helpers
-│
-├── agents/                     # Python agent definitions
-│   ├── builder/
-│   │   └── builder_agent.py    # Build/code generation agent
-│   ├── planner/
-│   │   └── planner_agent.py    # Task planning agent
-│   ├── researcher/
-│   │   └── researcher_agent.py # Research/data gathering agent
-│   ├── revenue/
-│   │   └── revenue_agent.py    # Revenue generation agent
-│   ├── builder_agent.py        # Flat builder agent (alt)
-│   ├── planner_agent.py        # Flat planner agent (alt)
-│   ├── dev-agent.js            # JS dev agent
-│   └── titan_architect.md      # Architecture notes
-│
-├── dashboard/                  # Flask real-time dashboard
-│   ├── app.py                  # Flask + SocketIO server
-│   └── templates/
-│       └── index.html          # Dashboard UI
-│
-├── products/                   # Product catalog & generation
-│   ├── product-factory.py      # Product creation
-│   ├── product-orchestrator.py # Product pipeline coordinator
-│   ├── product-publisher.py    # Publishes to Stripe
-│   ├── batch-generate.py       # Bulk product generation
-│   ├── order-manifest.py       # Order tracking
-│   ├── index.js                # Products JS entry
-│   ├── storefront.html         # Storefront UI
-│   └── catalog/
-│       └── catalog.json        # Product catalog data
-│
-├── execution/                  # Revenue execution layer
-│   ├── server.js               # Execution HTTP server
-│   ├── stripe.js               # Stripe payment integration
-│   └── webhook.js              # Webhook handlers
-│
-├── stripe-catalog/             # Stripe product catalog
-│   ├── index.js
-│   └── config.json
-│
-├── generated/                  # AI-generated artifacts (auto-created)
-│   ├── asset-*.json
-│   ├── build-*.json
-│   ├── product-*.json
-│   └── run_*.json
-│
-├── products/deliverables/      # Generated product files
-│   └── prod_*.json             # Individual product deliverables
-│
-├── memory/                     # Persistent agent memory
-│   ├── brain.json              # Brain state
-│   ├── state.json              # System state
-│   └── tasks.json              # Active tasks
-│
-├── data/                       # Structured data storage
-│   ├── db.json                 # Main database
-│   ├── projects.json           # Project records
-│   ├── revenue.json            # Revenue tracking
-│   ├── schema.sql              # DB schema
-│   └── tasks.json              # Task data
-│
-├── logs/                       # Runtime logs (auto-created by setup.sh)
-│
-├── deployment/                 # Deployment manifests
-│   ├── Dockerfile              # Docker image (node:20-alpine) — server only
-│   ├── docker-compose.yml      # Multi-service compose — server only
-│   ├── agent-x-core.service    # systemd service — Linux server only
-│   ├── digital-twin.service    # systemd service — Linux server only
-│   └── termux-boot.sh          # Termux auto-start (Termux:Boot addon)
-│
-├── tools/                      # Python tool modules
-│   ├── code_tools.py           # Code generation tools
-│   └── deployment_tools.py     # Deployment helpers
-│
-├── integrations/               # External service adapters
-│   └── pure_graph_adapter.py   # Graph/workflow integration
-│
-├── overmind/index.js           # Top-level orchestration controller
-├── hermes/router.js            # Internal message router
-├── engine/orchestrator.js      # Alternate orchestrator
-├── income_squad/index.js       # Income-focused agent squad
-├── titan-core/                 # Titan architecture core
-│   ├── config.js
-│   └── master.js
-│
-├── config/settings.yaml        # Global configuration
-├── memory.json                 # Root-level memory file
-├── app.py                      # Standalone NLP/sentiment demo
-├── requirements.txt            # Python dependencies
-├── docker-compose.yml          # Root compose file (server deployments)
-├── run.py                      # Python launch script
-├── run.js                      # JS launch script
-├── auto-publish.js             # Auto-publishing trigger
-├── auto-publish.py             # Auto-publishing (Python)
-├── process-manager.py          # Python process manager
-├── setup_agents.sh             # Agent setup script (Termux-compatible)
-├── upgrade_agents.sh           # Agent upgrade script (Termux-compatible)
-├── README.md                   # Project README — includes Termux quickstart
-└── strategy.md                 # Revenue/product strategy notes
-```
+### Data & Memory
+
+| File | Purpose |
+|---|---|
+| `memory/brain.json` | Persistent AI brain state |
+| `memory/state.json` | System state snapshot |
+| `memory/tasks.json` | Queued/completed task records |
+| `memory/registry.json` | Persisted agent registry snapshot (written by registry.js) |
+| `data/db.json` | General database (JSON flat file) |
+| `data/tasks.json` | Task definitions |
+| `data/revenue.json` | Revenue tracking data |
+| `data/schema.sql` | SQL schema reference |
+| `config/settings.yaml` | Central configuration |
 
 ---
 
 ## Tech Stack
 
-### JavaScript / Node.js
-| Package | Version | Purpose |
+### Node.js (Primary Runtime)
+
+| Package | Version | Usage |
 |---|---|---|
-| `express` | ^5.2.1 | HTTP API server |
-| `axios` | ^1.17.0 | Outbound HTTP requests |
-| `cors` | ^2.8.6 | CORS middleware |
-| `dotenv` | ^17.4.2 | Environment variable loading |
-| `uuid` | ^14.0.0 | Request/artifact/task ID generation |
+| `express` | ^5.2.1 | HTTP API server (both agent-x-core and digital-twin) |
+| `axios` | ^1.17.0 | HTTP client for outbound requests |
+| `cors` | ^2.8.6 | Cross-origin resource sharing |
+| `dotenv` | ^17.4.2 | Environment variable management |
+| `uuid` | ^14.0.0 | Unique ID generation for tasks/requests |
 | `stripe` | ^22.2.1 | Payment processing |
-| `jsonwebtoken` | ^9.0.3 | Auth tokens |
+| `jsonwebtoken` | ^9.0.3 | JWT authentication |
 | `bcryptjs` | ^3.0.3 | Password hashing |
-| `lowdb` | ^7.0.1 | Lightweight JSON database |
-| `nodemon` | ^3.1.14 | Dev file watching — **dev/server only, not used in Termux PM2 configs** |
-| `pm2` | ^5.3.0 | Process management (server + Termux) |
-| `node-fetch` | ^
+| `lowdb` | ^7.0.1 | JSON flat-file database |
+| `nodemon` | ^3.1.14 | Development hot-reload |
+| `pm2` | ^5.3.0 | Production process manager |
+| `node-fetch` | ^3.3.2 | Optional fetch for communication layer |
+
+### Python (Secondary Runtime)
+
+| Library | Usage |
+|---|---|
+| `flask` | Dashboard HTTP server |
+| `flask-socketio` | Real-time WebSocket streaming |
+| `transformers` | HuggingFace LLM/NLP pipeline |
+| Standard Library | `os`, `sys`, `json` for state/file management |
+
+### Infrastructure
+
+| Technology | Usage |
+|---|---|
+| Docker / Docker Compose | Containerized deployment |
+| Node 20 Alpine | Docker base image |
+| systemd | Linux service management |
+| Termux | Android-native deployment |
+
+---
+
+## Agent Registry & Heartbeat System
+
+### Overview
+
+The Agent Registry provides a centralized catalog of all active agents with real-time liveness tracking via periodic heartbeats. It is a core subsystem of `agent-x-core`, exposed via REST API and integrated with the orchestrator and watchdog.
+
+### Agent Lifecycle States
+
+```
+REGISTERED → ACTIVE → STALE → DEAD
+                ↑         │
+                └─────────┘  (re-heartbeat recovers to ACTIVE)
+```
+
+| State | Meaning |
+|---|---|
+| `registered` | Agent has registered but not yet sent a heartbeat |
+| `active` | Agent is sending heartbeats within the expected interval |
+| `stale` | Agent missed heartbeat window but has not exceeded dead threshold |
+| `dead` | Agent has exceeded the dead threshold; restart callback triggered |
+
+### Agent Registration Schema
+
+```json
+{
+  "id": "uuid-v4",
+  "name": "content-generator",
+  "type": "worker",
+  "capabilities": ["draft", "email", "post"],
+  "status": "active",
+  "registeredAt": "ISO8601",
+  "lastHeartbeat": "ISO8601",
+  "missedHeartbeats": 0,
+  "meta": {}
+}
+```
+
+### Registry REST API
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/agents` | List all registered agents and their status |
+| `POST` | `/agents/register` | Register a new agent (returns assigned ID) |
+| `POST` | `/agents/:id/heartbeat` | Record a heartbeat for the specified agent |
+| `DELETE` | `/agents/:id` | Deregister an agent |
+
+### Heartbeat Configuration
+
+| Setting | Default | Description |
+|---|---|---|
+| `HEARTBEAT_INTERVAL_MS` | `15000` | How often agents should send heartbeats (15s) |
+| `STALE_THRESHOLD_MS` | `30000` | Time without heartbeat before marked `stale` (30s) |
+| `DEAD_THRESHOLD_MS` | `60000` | Time without heartbeat before marked `dead` (60s) |
+
+All thresholds are configurable via environment variables.
+
+### Integration Points
+
+- **`watchdog.js`** — subscribes to `dead` agent events from `heartbeat.js` to trigger restarts
+- **`orchestrator.js`** — queries registry before routing tasks to ensure target agent is `active`
+- **`registry-api.js`** — mounted on `agent-x-core` Express app (e.g., `/v1/registry`)
+- **`memory/registry.json`** — registry state is persisted to disk for recovery after restarts
+
+---
+
+## Agent Communication Protocol
+
+Worker agents follow a strict **stdio JSON line protocol**:
+
+### Request Envelope
+```json
+{
+  "action": "draft",
+  "requestId": "abc123",
+  "payload": {
+    "topic": "automation",
+    "audience": "founders",
+    "variant": "long"
+  }
+}
+```
+
+### Success Response
+```json
+{
+  "ok": true,
+  "requestId": "abc123",
+  "result": { ... }
+}
+```
+
+### Failure Response
+```json
+{
+  "ok": false,
+  "error": "Description of error"
+}
+```
+
+### One-Shot Invocation Pattern
+```bash
+# api-socket agent
+printf '%s' '{"action":"get","requestId":"t1","payload":{"url":"https://httpbin.org/get"}}' \
+  | node ~/agent-x/agent-x-core/agents/api-socket.js
+
+# content-generator agent
+printf '%s' '{"action":"draft","requestId":"c1","payload":{"topic":"automation","audience":"founders","variant":"short"}}' \
+  | node ~/agent-x/agent-x-core/agents/content-generator.js
+
+# data-aggregator agent
+printf '%s' '{"action":"aggregate","requestId":"d1","payload":{"sourceUrls":["https://example.com"],"timeWindow":"24h"}}' \
+  | node ~/agent-x/agent-x-core/agents/data-aggregator.js
+```
+
+### Registry Heartbeat Pattern (HTTP)
+```bash
+# Register an agent
+curl -X POST http://localhost:3000/v1/registry/agents/register \
+  -H "Content-Type: application/json" \
+  -d '{"name":"content-generator","type":"worker","capabilities":["draft","email"]}'
+
+# Send a heartbeat
+curl -X POST http://localhost:3000/v1/registry/agents/{id}/heartbeat
+
+# List all agents
+curl http://localhost:3000/v1/registry/agents
+```
+
+---
+
+## Coding Conventions
+
+### JavaScript
+
+- **Module system:** CommonJS (`require`/`module.exports`) — `"type": "commonjs"` in `agent-x-core/package.json`
+- **Agent structure:** Each agent is a **self-contained stdio process** — reads from stdin line-by-line, writes JSON to stdout
+- **Error handling:** Always return `{"ok": false, "error": "..."}` on failure — never throw unhandled rejections to stdout
+- **Naming:** `kebab-case` for filenames (e.g., `content-generator.js`, `api-socket.js`, `registry-api.js`)
+- **HTTP servers:** Express 5.x on defined ports (3000 = core, 3001 = digital-twin)
+- **Task IDs:** Use `uuid` package for all unique identifiers
+- **Registry modules:** Export a class or factory function; `registry.js` exports a singleton registry instance; `heartbeat.js` exports a `HeartbeatMonitor` class; `registry-api.js` exports an Express Router
+
+### Python
+
+- **Package structure:** `__init__.py` in each agent subdirectory (proper Python packages)
+- **Agent classes:** Each agent module exports a primary class named after its role (e.g., `BuilderAgent`, `PlannerAgent`)
+- **Dashboard:** Flask + SocketIO pattern — emit events via `socketio.emit("event", {...})`
+-
