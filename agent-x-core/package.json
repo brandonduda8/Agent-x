@@ -1,26 +1,35 @@
 {
   "name": "agent-x-core",
   "version": "1.0.0",
-  "description": "Agent X Command Center — Task API, Orchestrator, Registry, Upgrade Manager",
-  "type": "commonjs",
+  "description": "Agent X — Command Center (Express API, task routing, agent orchestration)",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
-    "dev": "nodemon index.js",
-    "test": "node registry/registry.test.js"
+    "start":     "node index.js",
+    "dev":       "nodemon index.js",
+    "test":      "node --test pipeline/pipeline.test.js",
+    "test:watch":"node --test --watch pipeline/pipeline.test.js",
+    "pm2:start": "pm2 start index.js --name agent-x-core",
+    "pm2:stop":  "pm2 stop agent-x-core",
+    "pm2:logs":  "pm2 logs agent-x-core"
   },
   "dependencies": {
-    "axios": "^1.17.0",
-    "bcryptjs": "^3.0.3",
-    "cors": "^2.8.6",
-    "dotenv": "^17.4.2",
-    "express": "^5.2.1",
+    "ajv":          "^8.17.1",
+    "axios":        "^1.17.0",
+    "bcryptjs":     "^3.0.3",
+    "cors":         "^2.8.6",
+    "dotenv":       "^17.4.2",
+    "express":      "^5.2.1",
     "jsonwebtoken": "^9.0.3",
-    "lowdb": "^7.0.1",
-    "stripe": "^22.2.1",
-    "uuid": "^14.0.0"
+    "lowdb":        "^7.0.1",
+    "node-fetch":   "^3.3.2",
+    "stripe":       "^22.2.1",
+    "uuid":         "^14.0.0",
+    "ws":           "^8.18.0"
   },
   "devDependencies": {
     "nodemon": "^3.1.14"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }
