@@ -1,83 +1,82 @@
 /**
- * Heartbeat Monitor
+ * heartbeat-monitor.js
  * =============================================================================
- * Runs a periodic check (every HEARTBEAT_INTERVAL_MS) that:
- *   1. Calls markStaleAgents() to demote agents that have missed heartbeats.
- *   2. Logs a summary of active / idle / stale / offline counts.
- *   3. Emits structured events so other parts of the system can react.
+ * Periodic liveness checker for all registered agents.
  *
- * Configuration (via .env / process.env):
- *   HEARTBEAT_INTERVAL_MS  — how often to run the check (default: 30 000 ms)
- *   HEARTBEAT_STALE_MS     — age at which an agent is considered stale (default: 60 000 ms)
+ * Polls the agent registry on a configurable interval and transitions agents
+ * through the stale → dead lifecycle when heartbeats are missed.
  *
- * Lifecycle:
- *   const monitor = require('./heartbeat-monitor');
- *   monitor.start();   // begin periodic checks
- *   monitor.stop();    // clear the timer (e.g. during graceful shutdown)
- *   monitor.tick();    // run one check synchronously (useful in tests)
- *   monitor.summary(); // return current counts without running stale check
+ * Configuration (environment variables):
+ *   HEARTBEAT_INTERVAL_MS  — how often the monitor ticks (default: 15 000 ms)
+ *   STALE_THRESHOLD_MS     — time without heartbeat before → stale (default: 30 000 ms)
+ *   DEAD_THRESHOLD_MS      — time without heartbeat before → dead  (default: 60 000 ms)
+ *
+ * Dead-agent callbacks:
+ *   External consumers (watchdog, upgrade-manager) subscribe via
+ *   `monitor.onDead(callback)` to receive notifications when an agent crosses
+ *   the DEAD threshold.
+ *
+ * Usage:
+ *   const HeartbeatMonitor = require('./heartbeat-monitor');
+ *   const monitor = new HeartbeatMonitor();
+ *   monitor.onDead((agent) => console.log('Dead:', agent.id));
+ *   monitor.start();
+ *   // later…
+ *   monitor.stop();
  * =============================================================================
  */
 
 'use strict';
 
-const { EventEmitter } = require('events');
 const registry = require('./agent-registry');
 
-// --------------------------------------------------------------------------- #
-// Configuration
-// --------------------------------------------------------------------------- #
+const HEARTBEAT_INTERVAL_MS = Number(process.env.HEARTBEAT_INTERVAL_MS) || 15_000;
+const STALE_THRESHOLD_MS    = Number(process.env.STALE_THRESHOLD_MS)    || 30_000;
+const DEAD_THRESHOLD_MS     = Number(process.env.DEAD_THRESHOLD_MS)     || 60_000;
 
-/** How frequently (ms) the monitor fires. Default: 30 s */
-const HEARTBEAT_INTERVAL_MS = parseInt(
-  process.env.HEARTBEAT_INTERVAL_MS || '30000',
-  10,
-);
-
-/** Age (ms) after which a non-heartbeating agent is marked stale. Default: 60 s */
-const HEARTBEAT_STALE_MS = parseInt(
-  process.env.HEARTBEAT_STALE_MS || '60000',
-  10,
-);
-
-// --------------------------------------------------------------------------- #
-// Monitor class
-// --------------------------------------------------------------------------- #
-
-class HeartbeatMonitor extends EventEmitter {
+class HeartbeatMonitor {
   constructor() {
-    super();
-    this._timer     = null;
-    this._running   = false;
-    this._tickCount = 0;
+    this._timer      = null;
+    this._deadCbs    = [];
+    this._staleCbs   = [];
+    this._running    = false;
   }
 
-  // ------------------------------------------------------------------ //
-  // Public API
-  // ------------------------------------------------------------------ //
+  /**
+   * Register a callback invoked when an agent transitions to `dead`.
+   * @param {Function} cb  — (agentRecord) => void
+   */
+  onDead(cb) {
+    if (typeof cb === 'function') this._deadCbs.push(cb);
+    return this;
+  }
 
   /**
-   * Start the periodic heartbeat check.
-   * Calling start() when already running is a no-op.
+   * Register a callback invoked when an agent transitions to `stale`.
+   * @param {Function} cb  — (agentRecord) => void
+   */
+  onStale(cb) {
+    if (typeof cb === 'function') this._staleCbs.push(cb);
+    return this;
+  }
+
+  /**
+   * Start the heartbeat polling loop.
    */
   start() {
     if (this._running) return;
     this._running = true;
-
     console.log(
       `[heartbeat-monitor] Started — interval: ${HEARTBEAT_INTERVAL_MS}ms, ` +
-      `stale threshold: ${HEARTBEAT_STALE_MS}ms`,
+      `stale: ${STALE_THRESHOLD_MS}ms, dead: ${DEAD_THRESHOLD_MS}ms`
     );
-
-    this._timer = setInterval(() => this.tick(), HEARTBEAT_INTERVAL_MS);
-
-    // setInterval does not prevent the process from exiting in test
-    // environments — unref() ensures it's not the last thing keeping Node up.
+    this._timer = setInterval(() => this._tick(), HEARTBEAT_INTERVAL_MS);
+    // Unref so the timer doesn't prevent process exit in tests
     if (this._timer.unref) this._timer.unref();
   }
 
   /**
-   * Stop the periodic check. Safe to call multiple times.
+   * Stop the polling loop.
    */
   stop() {
     if (this._timer) {
@@ -89,85 +88,41 @@ class HeartbeatMonitor extends EventEmitter {
   }
 
   /**
-   * Execute one heartbeat scan immediately (also called by the interval).
-   * Emits:
-   *   "tick"   { tickCount, summary }
-   *   "stale"  { agents: [...] }   — only when agents become stale
+   * Perform one liveness check pass across all agents.
+   * Exported for direct invocation in tests.
    */
-  tick() {
-    this._tickCount += 1;
+  _tick() {
+    const now    = Date.now();
+    const agents = registry.listAgents();
 
-    let staled = [];
-    try {
-      staled = registry.markStaleAgents(HEARTBEAT_STALE_MS);
-    } catch (err) {
-      console.error('[heartbeat-monitor] Error running markStaleAgents:', err.message);
-      this.emit('error', err);
-      return;
+    for (const agent of agents) {
+      // Only monitor agents that have registered and sent at least one heartbeat
+      if (!agent.lastHeartbeat) continue;
+
+      const elapsed = now - new Date(agent.lastHeartbeat).getTime();
+
+      if (elapsed >= DEAD_THRESHOLD_MS && agent.status !== registry.STATUS.DEAD) {
+        registry.setStatus(agent.id, registry.STATUS.DEAD);
+        registry.incrementMissedHeartbeats(agent.id);
+        const updated = registry.getAgent(agent.id);
+        console.warn(`[heartbeat-monitor] Agent ${agent.id} (${agent.name}) marked DEAD`);
+        this._deadCbs.forEach(cb => { try { cb(updated); } catch {} });
+
+      } else if (
+        elapsed >= STALE_THRESHOLD_MS &&
+        elapsed <  DEAD_THRESHOLD_MS  &&
+        agent.status === registry.STATUS.ACTIVE
+      ) {
+        registry.setStatus(agent.id, registry.STATUS.STALE);
+        registry.incrementMissedHeartbeats(agent.id);
+        const updated = registry.getAgent(agent.id);
+        console.warn(`[heartbeat-monitor] Agent ${agent.id} (${agent.name}) marked STALE`);
+        this._staleCbs.forEach(cb => { try { cb(updated); } catch {} });
+      }
     }
-
-    if (staled.length > 0) {
-      const names = staled.map((a) => `${a.name} (${a.id})`).join(', ');
-      console.warn(
-        `[heartbeat-monitor] Tick #${this._tickCount} — ` +
-        `${staled.length} agent(s) marked stale: ${names}`,
-      );
-      this.emit('stale', { agents: staled });
-    } else {
-      console.log(
-        `[heartbeat-monitor] Tick #${this._tickCount} — ` +
-        `no new stale agents`,
-      );
-    }
-
-    const sum = this.summary();
-    this.emit('tick', { tickCount: this._tickCount, summary: sum });
-    return sum;
   }
 
-  /**
-   * Return current agent counts by status without mutating anything.
-   * @returns {{ total: number, active: number, idle: number, stale: number, offline: number }}
-   */
-  summary() {
-    let all;
-    try {
-      all = registry.listAgents();
-    } catch (_) {
-      all = [];
-    }
-
-    const counts = { total: all.length, active: 0, idle: 0, stale: 0, offline: 0 };
-    for (const a of all) {
-      if (counts[a.status] !== undefined) counts[a.status] += 1;
-    }
-    return counts;
-  }
-
-  /** Whether the monitor is currently running. */
-  get isRunning() {
-    return this._running;
-  }
-
-  /** Number of ticks fired since start(). */
-  get tickCount() {
-    return this._tickCount;
-  }
-
-  /** Configured interval in milliseconds. */
-  get intervalMs() {
-    return HEARTBEAT_INTERVAL_MS;
-  }
-
-  /** Configured stale threshold in milliseconds. */
-  get staleMs() {
-    return HEARTBEAT_STALE_MS;
-  }
+  get isRunning() { return this._running; }
 }
 
-// --------------------------------------------------------------------------- #
-// Singleton export
-// --------------------------------------------------------------------------- #
-const monitor = new HeartbeatMonitor();
-
-module.exports = monitor;
+module.exports = HeartbeatMonitor;

@@ -1,22 +1,20 @@
 /**
- * Agent Registry
+ * agent-registry.js
  * =============================================================================
- * Flat-file backed CRUD store for registered agents.
+ * Central registry for all active agents.
  *
- * Schema per agent record:
- * {
- *   id            : string  (uuid v4)           — immutable after creation
- *   name          : string                       — human-readable display name
- *   type          : string                       — category label (e.g. "worker", "orchestrator")
- *   capabilities  : string[]                     — list of action tokens the agent can handle
- *   status        : "active"|"idle"|"stale"|"offline"
- *   current_task_id : string | null              — task the agent is presently executing
- *   last_heartbeat  : ISO-8601 string | null     — wall-clock time of most-recent ping
- *   created_at      : ISO-8601 string            — immutable creation timestamp
- *   updated_at      : ISO-8601 string            — updated on every write
- * }
+ * Responsibilities:
+ *   • Store agent metadata (id, name, type, capabilities, status, heartbeat)
+ *   • Expose CRUD helpers used by registry-api / upgrade-manager / watchdog
+ *   • Persist state to memory/registry.json on every mutation
+ *   • Fire optional restart callbacks registered by external consumers
+ *     (watchdog, upgrade-manager) so the upgrade system can trigger
+ *     graceful agent restarts without a direct PM2 dependency
  *
- * Persistence: data/agents.json  (read on require, flushed after every mutation)
+ * Agent lifecycle states:
+ *   registered → active → stale → dead
+ *                  ↑        │
+ *                  └────────┘  (re-heartbeat recovers to active)
  * =============================================================================
  */
 
@@ -26,364 +24,276 @@ const fs   = require('fs');
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 
-// --------------------------------------------------------------------------- #
+// ---------------------------------------------------------------------------
 // Storage path
-// --------------------------------------------------------------------------- #
-const STORE_PATH = path.resolve(__dirname, '../../data/agents.json');
+// ---------------------------------------------------------------------------
 
-// Allowed status values — used for validation throughout
-const VALID_STATUSES = new Set(['active', 'idle', 'stale', 'offline']);
+const REGISTRY_FILE = path.resolve(__dirname, '../../memory/registry.json');
 
-// --------------------------------------------------------------------------- #
-// Low-level helpers
-// --------------------------------------------------------------------------- #
+// ---------------------------------------------------------------------------
+// Ensure the memory/ directory exists
+// ---------------------------------------------------------------------------
+const _memDir = path.dirname(REGISTRY_FILE);
+if (!fs.existsSync(_memDir)) fs.mkdirSync(_memDir, { recursive: true });
 
-/**
- * Read the full agents array from disk.
- * Returns [] if the file is missing or malformed (fail-safe).
- * @returns {Object[]}
- */
-function _read() {
-  try {
-    const raw = fs.readFileSync(STORE_PATH, 'utf8');
-    const parsed = JSON.parse(raw);
-    // Support both { agents: [] } wrapper and bare [] shapes
-    if (Array.isArray(parsed)) return parsed;
-    if (parsed && Array.isArray(parsed.agents)) return parsed.agents;
-    return [];
-  } catch (_) {
-    return [];
-  }
-}
+// ---------------------------------------------------------------------------
+// In-memory agent map  { agentId → agentRecord }
+// ---------------------------------------------------------------------------
+
+/** @type {Map<string, object>} */
+const _agents = new Map();
 
 /**
- * Flush the agents array to disk atomically (write-then-rename).
- * The { agents: [] } wrapper is preserved for consistency with other data files.
- * @param {Object[]} agents
+ * External restart callbacks registered by watchdog / upgrade-manager.
+ * @type {Map<string, Function>}
  */
-function _write(agents) {
-  const dir   = path.dirname(STORE_PATH);
-  const tmp   = path.join(dir, `.agents-${process.pid}.tmp`);
-  const payload = JSON.stringify({ agents }, null, 2);
+const _restartCallbacks = new Map();
 
+// ---------------------------------------------------------------------------
+// Agent status constants
+// ---------------------------------------------------------------------------
+
+const STATUS = Object.freeze({
+  REGISTERED: 'registered',
+  ACTIVE:     'active',
+  STALE:      'stale',
+  DEAD:       'dead',
+});
+
+// ---------------------------------------------------------------------------
+// Persistence helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Load registry state from disk (called once at startup).
+ */
+function _load() {
   try {
-    fs.mkdirSync(dir, { recursive: true });
-    fs.writeFileSync(tmp, payload, 'utf8');
-    fs.renameSync(tmp, STORE_PATH);
+    if (!fs.existsSync(REGISTRY_FILE)) return;
+    const raw  = fs.readFileSync(REGISTRY_FILE, 'utf8').trim();
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    if (Array.isArray(data.agents)) {
+      for (const agent of data.agents) {
+        _agents.set(agent.id, agent);
+      }
+    }
   } catch (err) {
-    // Clean up temp file if rename failed
-    try { fs.unlinkSync(tmp); } catch (_) {}
-    throw err;
+    console.warn('[agent-registry] Failed to load registry.json:', err.message);
   }
-}
-
-/** Return a compact ISO-8601 UTC timestamp string. */
-function _now() {
-  return new Date().toISOString();
-}
-
-// --------------------------------------------------------------------------- #
-// Validation helpers
-// --------------------------------------------------------------------------- #
-
-/**
- * Validate fields supplied when creating a new agent.
- * @param {Object} data
- * @returns {{ valid: boolean, errors: string[] }}
- */
-function validateCreatePayload(data) {
-  const errors = [];
-
-  if (!data.name || typeof data.name !== 'string' || !data.name.trim()) {
-    errors.push('"name" is required and must be a non-empty string');
-  }
-
-  if (!data.type || typeof data.type !== 'string' || !data.type.trim()) {
-    errors.push('"type" is required and must be a non-empty string');
-  }
-
-  if (data.capabilities !== undefined) {
-    if (!Array.isArray(data.capabilities)) {
-      errors.push('"capabilities" must be an array of strings');
-    } else if (data.capabilities.some((c) => typeof c !== 'string')) {
-      errors.push('every item in "capabilities" must be a string');
-    }
-  }
-
-  if (data.status !== undefined && !VALID_STATUSES.has(data.status)) {
-    errors.push(`"status" must be one of: ${[...VALID_STATUSES].join(', ')}`);
-  }
-
-  return { valid: errors.length === 0, errors };
 }
 
 /**
- * Validate fields supplied when updating an existing agent.
- * All fields are optional; only provided fields are validated.
- * @param {Object} data
- * @returns {{ valid: boolean, errors: string[] }}
+ * Flush current state to disk.
  */
-function validateUpdatePayload(data) {
-  const errors = [];
-
-  if (data.name !== undefined) {
-    if (typeof data.name !== 'string' || !data.name.trim()) {
-      errors.push('"name" must be a non-empty string');
-    }
+function _persist() {
+  try {
+    const payload = { agents: [..._agents.values()], savedAt: new Date().toISOString() };
+    fs.writeFileSync(REGISTRY_FILE, JSON.stringify(payload, null, 2), 'utf8');
+  } catch (err) {
+    console.warn('[agent-registry] Failed to persist registry.json:', err.message);
   }
-
-  if (data.type !== undefined) {
-    if (typeof data.type !== 'string' || !data.type.trim()) {
-      errors.push('"type" must be a non-empty string');
-    }
-  }
-
-  if (data.capabilities !== undefined) {
-    if (!Array.isArray(data.capabilities)) {
-      errors.push('"capabilities" must be an array of strings');
-    } else if (data.capabilities.some((c) => typeof c !== 'string')) {
-      errors.push('every item in "capabilities" must be a string');
-    }
-  }
-
-  if (data.status !== undefined && !VALID_STATUSES.has(data.status)) {
-    errors.push(`"status" must be one of: ${[...VALID_STATUSES].join(', ')}`);
-  }
-
-  // Immutable fields — reject attempts to change them
-  for (const immutable of ['id', 'created_at']) {
-    if (data[immutable] !== undefined) {
-      errors.push(`"${immutable}" is immutable and cannot be updated`);
-    }
-  }
-
-  return { valid: errors.length === 0, errors };
 }
 
-// --------------------------------------------------------------------------- #
-// Public CRUD API
-// --------------------------------------------------------------------------- #
+// Boot-time load
+_load();
 
-/**
- * Return all registered agents, optionally filtered.
- *
- * @param {Object} [filters={}]
- * @param {string} [filters.status]  — filter by status value
- * @param {string} [filters.type]    — filter by agent type
- * @returns {Object[]}
- */
-function listAgents(filters = {}) {
-  let agents = _read();
-
-  if (filters.status) {
-    agents = agents.filter((a) => a.status === filters.status);
-  }
-  if (filters.type) {
-    agents = agents.filter((a) => a.type === filters.type);
-  }
-
-  return agents;
-}
-
-/**
- * Look up a single agent by ID.
- * @param {string} id
- * @returns {Object|null}
- */
-function getAgent(id) {
-  return _read().find((a) => a.id === id) || null;
-}
+// ---------------------------------------------------------------------------
+// Public API — Agent CRUD
+// ---------------------------------------------------------------------------
 
 /**
  * Register a new agent.
  *
- * @param {Object} data
- * @param {string}   data.name
- * @param {string}   data.type
- * @param {string[]} [data.capabilities=[]]
- * @param {string}   [data.status="idle"]
- * @param {string|null} [data.current_task_id=null]
- * @returns {{ ok: boolean, agent?: Object, errors?: string[] }}
+ * @param {object} params
+ * @param {string}   [params.id]           — pre-assigned ID (generated if omitted)
+ * @param {string}   params.name
+ * @param {string}   [params.type]         — e.g. 'worker', 'orchestrator'
+ * @param {string[]} [params.capabilities] — array of capability strings
+ * @param {object}   [params.meta]
+ * @returns {object} The registered agent record
  */
-function createAgent(data) {
-  const { valid, errors } = validateCreatePayload(data);
-  if (!valid) return { ok: false, errors };
+function registerAgent({ id, name, type = 'worker', capabilities = [], meta = {} }) {
+  if (!name) throw new Error('agent-registry: name is required');
 
-  const now   = _now();
+  const agentId = id || uuidv4();
+
+  if (_agents.has(agentId)) {
+    throw new Error(`agent-registry: agent ${agentId} is already registered`);
+  }
+
   const agent = {
-    id             : uuidv4(),
-    name           : data.name.trim(),
-    type           : data.type.trim(),
-    capabilities   : Array.isArray(data.capabilities)
-      ? data.capabilities.map((c) => String(c).trim()).filter(Boolean)
-      : [],
-    status          : VALID_STATUSES.has(data.status) ? data.status : 'idle',
-    current_task_id : data.current_task_id || null,
-    last_heartbeat  : null,
-    created_at      : now,
-    updated_at      : now,
+    id:               agentId,
+    name,
+    type,
+    capabilities,
+    status:           STATUS.REGISTERED,
+    registeredAt:     new Date().toISOString(),
+    lastHeartbeat:    null,
+    missedHeartbeats: 0,
+    meta,
   };
 
-  const agents = _read();
-  agents.push(agent);
-  _write(agents);
-
-  return { ok: true, agent };
+  _agents.set(agentId, agent);
+  _persist();
+  return agent;
 }
 
 /**
- * Partially update an existing agent by ID.
- * Immutable fields (id, created_at) are rejected.
+ * Retrieve a single agent by ID.
  *
- * @param {string} id
- * @param {Object} data  — fields to update (all optional)
- * @returns {{ ok: boolean, agent?: Object, errors?: string[], notFound?: boolean }}
+ * @param {string} agentId
+ * @returns {object|null}
  */
-function updateAgent(id, data) {
-  const { valid, errors } = validateUpdatePayload(data);
-  if (!valid) return { ok: false, errors };
-
-  const agents = _read();
-  const idx    = agents.findIndex((a) => a.id === id);
-
-  if (idx === -1) return { ok: false, notFound: true };
-
-  const existing = agents[idx];
-  const mutable  = ['name', 'type', 'capabilities', 'status', 'current_task_id'];
-
-  for (const field of mutable) {
-    if (data[field] !== undefined) {
-      existing[field] = field === 'capabilities'
-        ? data[field].map((c) => String(c).trim()).filter(Boolean)
-        : data[field];
-    }
-  }
-
-  existing.updated_at = _now();
-  agents[idx] = existing;
-  _write(agents);
-
-  return { ok: true, agent: existing };
+function getAgent(agentId) {
+  return _agents.get(agentId) || null;
 }
 
 /**
- * Delete an agent by ID.
- * @param {string} id
- * @returns {{ ok: boolean, notFound?: boolean }}
- */
-function deleteAgent(id) {
-  const agents  = _read();
-  const filtered = agents.filter((a) => a.id !== id);
-
-  if (filtered.length === agents.length) return { ok: false, notFound: true };
-
-  _write(filtered);
-  return { ok: true };
-}
-
-// --------------------------------------------------------------------------- #
-// Heartbeat
-// --------------------------------------------------------------------------- #
-
-/**
- * Record a heartbeat for an agent, updating its status and optional task.
+ * List all agents (optionally filtered by status).
  *
- * @param {string} id
- * @param {Object} [payload={}]
- * @param {string} [payload.status]          — new status (optional)
- * @param {string|null} [payload.current_task_id] — current task (optional)
- * @returns {{ ok: boolean, agent?: Object, notFound?: boolean, errors?: string[] }}
+ * @param {string} [statusFilter]
+ * @returns {Array<object>}
  */
-function recordHeartbeat(id, payload = {}) {
-  const agents = _read();
-  const idx    = agents.findIndex((a) => a.id === id);
-
-  if (idx === -1) return { ok: false, notFound: true };
-
-  const agent = agents[idx];
-  const now   = _now();
-
-  // Status from heartbeat payload — must be a valid non-stale status
-  // (an agent that is heartbeating cannot be 'stale' or 'offline')
-  const incomingStatus = payload.status;
-  if (incomingStatus !== undefined) {
-    if (!VALID_STATUSES.has(incomingStatus)) {
-      return {
-        ok: false,
-        errors: [`"status" must be one of: ${[...VALID_STATUSES].join(', ')}`],
-      };
-    }
-    agent.status = incomingStatus;
-  } else {
-    // Default: a heartbeating agent is at least 'idle' (not stale/offline)
-    if (agent.status === 'stale' || agent.status === 'offline') {
-      agent.status = 'idle';
-    }
-  }
-
-  if (payload.current_task_id !== undefined) {
-    agent.current_task_id = payload.current_task_id || null;
-  }
-
-  agent.last_heartbeat = now;
-  agent.updated_at     = now;
-  agents[idx]          = agent;
-  _write(agents);
-
-  return { ok: true, agent };
+function listAgents(statusFilter) {
+  const all = [..._agents.values()];
+  return statusFilter ? all.filter(a => a.status === statusFilter) : all;
 }
 
 /**
- * Mark agents whose last_heartbeat is older than `thresholdMs` as "stale".
- * Agents already "offline" are not touched.
+ * Record a heartbeat for an agent — sets status to `active`.
  *
- * @param {number} [thresholdMs=60000]  — age in ms before an agent is stale (default 60 s)
- * @returns {Object[]}  list of agents that were just marked stale
+ * @param {string} agentId
+ * @returns {object} Updated agent record
  */
-function markStaleAgents(thresholdMs = 60_000) {
-  const agents   = _read();
-  const cutoff   = Date.now() - thresholdMs;
-  const nowStr   = _now();
-  const staled   = [];
+function heartbeat(agentId) {
+  const agent = _agents.get(agentId);
+  if (!agent) throw new Error(`agent-registry: agent ${agentId} not found`);
 
-  for (const agent of agents) {
-    if (agent.status === 'offline') continue; // already dead — skip
+  agent.lastHeartbeat    = new Date().toISOString();
+  agent.missedHeartbeats = 0;
+  agent.status           = STATUS.ACTIVE;
 
-    const hbTime = agent.last_heartbeat
-      ? new Date(agent.last_heartbeat).getTime()
-      : null;
-
-    const isStale = hbTime === null        // never sent a heartbeat
-      ? agent.status !== 'idle'            //   newly registered idle agents are OK without HB
-      : hbTime < cutoff;                   //   otherwise compare against cutoff
-
-    if (isStale && agent.status !== 'stale') {
-      agent.status     = 'stale';
-      agent.updated_at = nowStr;
-      staled.push(agent);
-    }
-  }
-
-  if (staled.length > 0) _write(agents);
-
-  return staled;
+  _persist();
+  return agent;
 }
 
-// --------------------------------------------------------------------------- #
+/**
+ * Mark an agent with a specific status.
+ *
+ * @param {string} agentId
+ * @param {string} status — one of STATUS values
+ * @returns {object}
+ */
+function setStatus(agentId, status) {
+  const agent = _agents.get(agentId);
+  if (!agent) throw new Error(`agent-registry: agent ${agentId} not found`);
+  agent.status = status;
+  _persist();
+  return agent;
+}
+
+/**
+ * Increment missed-heartbeat counter for an agent.
+ *
+ * @param {string} agentId
+ * @returns {object}
+ */
+function incrementMissedHeartbeats(agentId) {
+  const agent = _agents.get(agentId);
+  if (!agent) throw new Error(`agent-registry: agent ${agentId} not found`);
+  agent.missedHeartbeats = (agent.missedHeartbeats || 0) + 1;
+  _persist();
+  return agent;
+}
+
+/**
+ * Deregister an agent and remove it from memory.
+ *
+ * @param {string} agentId
+ * @returns {boolean} true if the agent existed and was removed
+ */
+function deregisterAgent(agentId) {
+  if (!_agents.has(agentId)) return false;
+  _agents.delete(agentId);
+  _restartCallbacks.delete(agentId);
+  _persist();
+  return true;
+}
+
+/**
+ * Update arbitrary metadata fields on an agent record.
+ *
+ * @param {string} agentId
+ * @param {object} updates — plain object of fields to merge
+ * @returns {object} Updated agent record
+ */
+function updateAgent(agentId, updates) {
+  const agent = _agents.get(agentId);
+  if (!agent) throw new Error(`agent-registry: agent ${agentId} not found`);
+
+  // Prevent status/id from being clobbered accidentally
+  const { id: _id, registeredAt: _reg, ...safe } = updates;
+  Object.assign(agent, safe);
+
+  _persist();
+  return agent;
+}
+
+// ---------------------------------------------------------------------------
+// Restart callback registration (used by upgrade-manager & watchdog)
+// ---------------------------------------------------------------------------
+
+/**
+ * Register a restart callback for an agent.
+ * When upgrade-manager needs to restart an agent it will invoke this callback.
+ *
+ * @param {string}   agentId
+ * @param {Function} fn       — async (agentId) => void
+ */
+function registerRestartCallback(agentId, fn) {
+  if (typeof fn !== 'function') throw new Error('restart callback must be a function');
+  _restartCallbacks.set(agentId, fn);
+}
+
+/**
+ * Trigger the registered restart callback for an agent.
+ * Falls back gracefully if no callback is registered.
+ *
+ * @param {string} agentId
+ * @returns {Promise<boolean>} true if a callback was invoked
+ */
+async function restartAgent(agentId) {
+  const cb = _restartCallbacks.get(agentId);
+  if (!cb) {
+    console.warn(`[agent-registry] No restart callback for agent ${agentId} — restart must be done manually`);
+    return false;
+  }
+  try {
+    await Promise.resolve(cb(agentId));
+    return true;
+  } catch (err) {
+    console.error(`[agent-registry] Restart callback failed for ${agentId}:`, err.message);
+    return false;
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Exports
-// --------------------------------------------------------------------------- #
+// ---------------------------------------------------------------------------
+
 module.exports = {
-  // CRUD
-  listAgents,
+  STATUS,
+  registerAgent,
   getAgent,
-  createAgent,
+  listAgents,
+  heartbeat,
+  setStatus,
+  incrementMissedHeartbeats,
+  deregisterAgent,
   updateAgent,
-  deleteAgent,
-  // Heartbeat
-  recordHeartbeat,
-  markStaleAgents,
-  // Validation (exported so tests and routes can reuse)
-  validateCreatePayload,
-  validateUpdatePayload,
-  VALID_STATUSES,
+  registerRestartCallback,
+  restartAgent,
+  // Expose for testing
+  _agents,
 };
