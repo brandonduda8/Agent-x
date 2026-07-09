@@ -37,6 +37,12 @@ The project targets deployment on both **Termux (Android)** and **standard Linux
 │  │                  Worker Agents (stdio/JSON)            │  │
 │  │  api-socket │ content-generator │ data-aggregator     │  │
 │  │  infrastructure │ orchestrator │ publisher            │  │
+│  └────────┬──────────────────────────────────────────────┘  │
+│           │                                                  │
+│  ┌────────▼──────────────────────────────────────────────┐  │
+│  │              Zangi Communication Layer                 │  │
+│  │  zangi-client.js │ zangi-router.js │ zangi-api.js     │  │
+│  │  zangi-message-schema.js │ zangi-event-bridge.js      │  │
 │  └───────────────────────────────────────────────────────┘  │
 │                                                             │
 │  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐ │
@@ -56,6 +62,7 @@ The project targets deployment on both **Termux (Android)** and **standard Linux
 | Worker Agents | `agent-x-core/agents/` | Standalone stdio JSON processes |
 | Agent Registry | `agent-x-core/registry/` | Agent registration, heartbeat tracking, health monitoring |
 | Upgrade & Versioning | `agent-x-core/upgrade/` | Agent upgrade management, config versioning, schema validation |
+| Zangi Communication | `agent-x-core/zangi/` | Inter-agent and external messaging via Zangi protocol |
 | Python Core | `core/` | Brain, state management, supervisor, LLM client |
 | Agent Modules | `agents/` | Python-based builder, planner, researcher, revenue agents |
 | Dashboard | `dashboard/` | Flask + SocketIO real-time monitoring UI |
@@ -96,6 +103,16 @@ The project targets deployment on both **Termux (Android)** and **standard Linux
 | `config-version-store.js` | Versioned configuration store — persists config snapshots with version numbers, supports diff and rollback to any prior version |
 | `upgrade-api.js` | Express router exposing upgrade/config REST endpoints (see Upgrade API section below) |
 | `config-schema-validator.js` | JSON Schema validation for agent configurations — enforces schema correctness before applying config versions |
+
+### Zangi Communication Layer (`agent-x-core/zangi/`)
+
+| File | Purpose |
+|---|---|
+| `zangi-client.js` | Core Zangi protocol client — manages connection lifecycle, authentication, and message dispatch to Zangi endpoints |
+| `zangi-router.js` | Routes inbound Zangi messages to registered agent handlers based on message type and target |
+| `zangi-api.js` | Express router exposing Zangi REST endpoints for sending messages, querying channel status, and managing subscriptions |
+| `zangi-message-schema.js` | JSON Schema definitions and validation for Zangi message envelopes — enforces structure before send/receive |
+| `zangi-event-bridge.js` | Bridges Zangi inbound events into the internal agent event bus, enabling agents to react to external Zangi messages |
 
 ### Core Worker Agents (`agent-x-core/agents/`)
 
@@ -169,6 +186,7 @@ The project targets deployment on both **Termux (Android)** and **standard Linux
 | `memory/tasks.json` | Queued/completed task records |
 | `memory/registry.json` | Persisted agent registry snapshot (written by registry.js) |
 | `memory/config-versions/` | Directory of versioned config snapshots (written by config-version-store.js) |
+| `memory/zangi-channels.json` | Persisted Zangi channel subscriptions and connection state |
 | `data/db.json` | General database (JSON flat file) |
 | `data/tasks.json` | Task definitions |
 | `data/revenue.json` | Revenue tracking data |
@@ -195,7 +213,7 @@ The project targets deployment on both **Termux (Android)** and **standard Linux
 | `nodemon` | ^3.1.14 | Development hot-reload |
 | `pm2` | ^5.3.0 | Production process manager |
 | `node-fetch` | ^3.3.2 | Optional fetch for communication layer |
-| `ajv` | latest | JSON Schema validation (used by config-schema-validator.js) |
+| `ajv` | latest | JSON Schema validation (used by config-schema-validator.js and zangi-message-schema.js) |
 
 ### Python (Secondary Runtime)
 
@@ -287,46 +305,3 @@ All thresholds are configurable via environment variables.
 ### Overview
 
 The Upgrade & Configuration Versioning system provides controlled, auditable agent upgrades with full config history, schema validation, and rollback support. It is mounted on `agent-x-core` and integrates with the registry to gate upgrades against agent liveness state.
-
-### Upgrade Lifecycle
-
-```
-PENDING → IN_PROGRESS → COMPLETE
-                │
-                └──► FAILED → ROLLED_BACK
-```
-
-| State | Meaning |
-|---|---|
-| `pending` | Upgrade requested but not yet started |
-| `in_progress` | Upgrade is actively being applied |
-| `complete` | Upgrade applied successfully |
-| `failed` | Upgrade encountered an error |
-| `rolled_back` | Automatic or manual rollback to prior version applied |
-
-### Config Version Schema
-
-```json
-{
-  "agentId": "uuid-v4",
-  "version": 3,
-  "config": { ... },
-  "schema": "agent-config-v1",
-  "appliedAt": "ISO8601",
-  "appliedBy": "upgrade-manager",
-  "changelog": "Description of what changed",
-  "previousVersion": 2
-}
-```
-
-### Upgrade API (`/v1/upgrade`)
-
-| Method | Endpoint | Description |
-|---|---|---|
-| `POST` | `/agents/:id/upgrade` | Initiate an upgrade for a specific agent |
-| `GET` | `/agents/:id/upgrade/status` | Get current upgrade status for an agent |
-| `POST` | `/agents/:id/upgrade/rollback` | Roll back agent to previous config version |
-| `GET` | `/agents/:id/config/versions` | List all config versions for an agent |
-| `GET` | `/agents/:id/config/versions/:version` | Retrieve a specific config version snapshot |
-| `POST` | `/agents/:id/config` | Apply a new config version (with schema validation) |
-| `GET`
