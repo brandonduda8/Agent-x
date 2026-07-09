@@ -34,6 +34,12 @@ The project targets deployment on both **Termux (Android)** and **standard Linux
 │  └────────┬──────────────────────────────────────────────┘  │
 │           │                                                  │
 │  ┌────────▼──────────────────────────────────────────────┐  │
+│  │           Agent Hermes Job Discovery & Matching        │  │
+│  │  hermes-client.js │ job-matcher.js │ hermes-api.js    │  │
+│  │  job-schema.js    │ hermes-event-bridge.js            │  │
+│  └────────┬──────────────────────────────────────────────┘  │
+│           │                                                  │
+│  ┌────────▼──────────────────────────────────────────────┐  │
 │  │                  Worker Agents (stdio/JSON)            │  │
 │  │  api-socket │ content-generator │ data-aggregator     │  │
 │  │  infrastructure │ orchestrator │ publisher            │  │
@@ -62,6 +68,7 @@ The project targets deployment on both **Termux (Android)** and **standard Linux
 | Worker Agents | `agent-x-core/agents/` | Standalone stdio JSON processes |
 | Agent Registry | `agent-x-core/registry/` | Agent registration, heartbeat tracking, health monitoring |
 | Upgrade & Versioning | `agent-x-core/upgrade/` | Agent upgrade management, config versioning, schema validation |
+| Hermes Job Discovery | `agent-x-core/hermes/` | Job discovery, capability-based matching, opportunity intake |
 | Zangi Communication | `agent-x-core/zangi/` | Inter-agent and external messaging via Zangi protocol |
 | Python Core | `core/` | Brain, state management, supervisor, LLM client |
 | Agent Modules | `agents/` | Python-based builder, planner, researcher, revenue agents |
@@ -103,6 +110,16 @@ The project targets deployment on both **Termux (Android)** and **standard Linux
 | `config-version-store.js` | Versioned configuration store — persists config snapshots with version numbers, supports diff and rollback to any prior version |
 | `upgrade-api.js` | Express router exposing upgrade/config REST endpoints (see Upgrade API section below) |
 | `config-schema-validator.js` | JSON Schema validation for agent configurations — enforces schema correctness before applying config versions |
+
+### Agent Hermes Job Discovery & Matching (`agent-x-core/hermes/`)
+
+| File | Purpose |
+|---|---|
+| `hermes-client.js` | Core Hermes protocol client — manages connection lifecycle, authentication, and job feed polling from external job/opportunity sources |
+| `job-matcher.js` | Capability-based job matching engine — scores and ranks discovered jobs against registered agent capabilities, filters by configurable criteria |
+| `hermes-api.js` | Express router exposing Hermes REST endpoints for querying discovered jobs, triggering match runs, and managing job intake |
+| `job-schema.js` | JSON Schema definitions and validation for job/opportunity envelopes — enforces structure before ingestion and matching |
+| `hermes-event-bridge.js` | Bridges Hermes job discovery events into the internal agent event bus, enabling agents to react to newly matched opportunities |
 
 ### Zangi Communication Layer (`agent-x-core/zangi/`)
 
@@ -187,6 +204,7 @@ The project targets deployment on both **Termux (Android)** and **standard Linux
 | `memory/registry.json` | Persisted agent registry snapshot (written by registry.js) |
 | `memory/config-versions/` | Directory of versioned config snapshots (written by config-version-store.js) |
 | `memory/zangi-channels.json` | Persisted Zangi channel subscriptions and connection state |
+| `memory/hermes-jobs.json` | Persisted discovered job records and match scores (written by job-matcher.js) |
 | `data/db.json` | General database (JSON flat file) |
 | `data/tasks.json` | Task definitions |
 | `data/revenue.json` | Revenue tracking data |
@@ -213,7 +231,7 @@ The project targets deployment on both **Termux (Android)** and **standard Linux
 | `nodemon` | ^3.1.14 | Development hot-reload |
 | `pm2` | ^5.3.0 | Production process manager |
 | `node-fetch` | ^3.3.2 | Optional fetch for communication layer |
-| `ajv` | latest | JSON Schema validation (used by config-schema-validator.js and zangi-message-schema.js) |
+| `ajv` | latest | JSON Schema validation (used by config-schema-validator.js, zangi-message-schema.js, and job-schema.js) |
 
 ### Python (Secondary Runtime)
 
@@ -274,34 +292,4 @@ REGISTERED → ACTIVE → STALE → DEAD
 
 ### Registry REST API
 
-| Method | Endpoint | Description |
-|---|---|---|
-| `GET` | `/agents` | List all registered agents and their status |
-| `POST` | `/agents/register` | Register a new agent (returns assigned ID) |
-| `POST` | `/agents/:id/heartbeat` | Record a heartbeat for the specified agent |
-| `DELETE` | `/agents/:id` | Deregister an agent |
-
-### Heartbeat Configuration
-
-| Setting | Default | Description |
-|---|---|---|
-| `HEARTBEAT_INTERVAL_MS` | `15000` | How often agents should send heartbeats (15s) |
-| `STALE_THRESHOLD_MS` | `30000` | Time without heartbeat before marked `stale` (30s) |
-| `DEAD_THRESHOLD_MS` | `60000` | Time without heartbeat before marked `dead` (60s) |
-
-All thresholds are configurable via environment variables.
-
-### Integration Points
-
-- **`watchdog.js`** — subscribes to `dead` agent events from `heartbeat.js` to trigger restarts
-- **`orchestrator.js`** — queries registry before routing tasks to ensure target agent is `active`
-- **`registry-api.js`** — mounted on `agent-x-core` Express app (e.g., `/v1/registry`)
-- **`memory/registry.json`** — registry state is persisted to disk for recovery after restarts
-
----
-
-## Agent Upgrade & Configuration Versioning System
-
-### Overview
-
-The Upgrade & Configuration Versioning system provides controlled, auditable agent upgrades with full config history, schema validation, and rollback support. It is mounted on `agent-x-core` and integrates with the registry to gate upgrades against agent liveness state.
+| Method | Endpoint
