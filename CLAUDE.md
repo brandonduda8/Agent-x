@@ -56,6 +56,13 @@ The project targets deployment on both **Termux (Android)** and **standard Linux
 │  │  (Flask/    │  │  listener   │  │  (Payment Layer)    │ │
 │  │  SocketIO)  │  │  (Node.js)  │  │                     │ │
 │  └─────────────┘  └─────────────┘  └─────────────────────┘ │
+│                                                             │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │           Autonomous Build Pipeline                  │   │
+│  │  build-pipeline.js │ build-monitor.js               │   │
+│  │  build-api.js      │ build-schema.js                │   │
+│  │  build-event-bridge.js                              │   │
+│  └─────────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -70,6 +77,7 @@ The project targets deployment on both **Termux (Android)** and **standard Linux
 | Upgrade & Versioning | `agent-x-core/upgrade/` | Agent upgrade management, config versioning, schema validation |
 | Hermes Job Discovery | `agent-x-core/hermes/` | Job discovery, capability-based matching, opportunity intake |
 | Zangi Communication | `agent-x-core/zangi/` | Inter-agent and external messaging via Zangi protocol |
+| Autonomous Build Pipeline | `agent-x-core/build/` | Self-directed build orchestration, real-time monitoring, build event streaming |
 | Python Core | `core/` | Brain, state management, supervisor, LLM client |
 | Agent Modules | `agents/` | Python-based builder, planner, researcher, revenue agents |
 | Dashboard | `dashboard/` | Flask + SocketIO real-time monitoring UI |
@@ -130,6 +138,16 @@ The project targets deployment on both **Termux (Android)** and **standard Linux
 | `zangi-api.js` | Express router exposing Zangi REST endpoints for sending messages, querying channel status, and managing subscriptions |
 | `zangi-message-schema.js` | JSON Schema definitions and validation for Zangi message envelopes — enforces structure before send/receive |
 | `zangi-event-bridge.js` | Bridges Zangi inbound events into the internal agent event bus, enabling agents to react to external Zangi messages |
+
+### Autonomous Build Pipeline (`agent-x-core/build/`)
+
+| File | Purpose |
+|---|---|
+| `build-pipeline.js` | Core autonomous build orchestrator — manages build lifecycle, step execution, dependency resolution, artifact tracking, and automatic retry/rollback on failure |
+| `build-monitor.js` | Real-time build monitor — tracks step-level progress, collects metrics (duration, success rate, artifact counts), emits live status events |
+| `build-api.js` | Express router exposing build REST endpoints — trigger builds, query status, retrieve logs, manage build history |
+| `build-schema.js` | JSON Schema definitions and validation for build job envelopes, step definitions, and artifact manifests |
+| `build-event-bridge.js` | Bridges build pipeline events into the internal agent event bus, enabling agents and the dashboard to react to build state changes in real time |
 
 ### Core Worker Agents (`agent-x-core/agents/`)
 
@@ -205,6 +223,7 @@ The project targets deployment on both **Termux (Android)** and **standard Linux
 | `memory/config-versions/` | Directory of versioned config snapshots (written by config-version-store.js) |
 | `memory/zangi-channels.json` | Persisted Zangi channel subscriptions and connection state |
 | `memory/hermes-jobs.json` | Persisted discovered job records and match scores (written by job-matcher.js) |
+| `memory/build-history.json` | Persisted build run records, step logs, artifact manifests, and outcome metrics (written by build-pipeline.js) |
 | `data/db.json` | General database (JSON flat file) |
 | `data/tasks.json` | Task definitions |
 | `data/revenue.json` | Revenue tracking data |
@@ -231,7 +250,7 @@ The project targets deployment on both **Termux (Android)** and **standard Linux
 | `nodemon` | ^3.1.14 | Development hot-reload |
 | `pm2` | ^5.3.0 | Production process manager |
 | `node-fetch` | ^3.3.2 | Optional fetch for communication layer |
-| `ajv` | latest | JSON Schema validation (used by config-schema-validator.js, zangi-message-schema.js, and job-schema.js) |
+| `ajv` | latest | JSON Schema validation (used by config-schema-validator.js, zangi-message-schema.js, job-schema.js, and build-schema.js) |
 
 ### Python (Secondary Runtime)
 
@@ -239,57 +258,4 @@ The project targets deployment on both **Termux (Android)** and **standard Linux
 |---|---|
 | `flask` | Dashboard HTTP server |
 | `flask-socketio` | Real-time WebSocket streaming |
-| `transformers` | HuggingFace LLM/NLP pipeline |
-| Standard Library | `os`, `sys`, `json` for state/file management |
-
-### Infrastructure
-
-| Technology | Usage |
-|---|---|
-| Docker / Docker Compose | Containerized deployment |
-| Node 20 Alpine | Docker base image |
-| systemd | Linux service management |
-| Termux | Android-native deployment |
-
----
-
-## Agent Registry & Heartbeat System
-
-### Overview
-
-The Agent Registry provides a centralized catalog of all active agents with real-time liveness tracking via periodic heartbeats. It is a core subsystem of `agent-x-core`, exposed via REST API and integrated with the orchestrator and watchdog.
-
-### Agent Lifecycle States
-
-```
-REGISTERED → ACTIVE → STALE → DEAD
-                ↑         │
-                └─────────┘  (re-heartbeat recovers to ACTIVE)
-```
-
-| State | Meaning |
-|---|---|
-| `registered` | Agent has registered but not yet sent a heartbeat |
-| `active` | Agent is sending heartbeats within the expected interval |
-| `stale` | Agent missed heartbeat window but has not exceeded dead threshold |
-| `dead` | Agent has exceeded the dead threshold; restart callback triggered |
-
-### Agent Registration Schema
-
-```json
-{
-  "id": "uuid-v4",
-  "name": "content-generator",
-  "type": "worker",
-  "capabilities": ["draft", "email", "post"],
-  "status": "active",
-  "registeredAt": "ISO8601",
-  "lastHeartbeat": "ISO8601",
-  "missedHeartbeats": 0,
-  "meta": {}
-}
-```
-
-### Registry REST API
-
-| Method | Endpoint
+| `transformers` | H
