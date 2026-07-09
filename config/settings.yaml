@@ -1,4 +1,96 @@
+# =============================================================================
+# Agent X — Central Configuration
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# LLM Provider Fallback Chain
+#
+# Providers are tried in order. On any non-2xx response, timeout, or error the
+# client automatically falls back to the next entry and logs the event to
+# memory/brain.json.
+#
+# Supported provider names:
+#   openrouter  — OpenRouter.ai proxy (OpenAI-compatible)
+#   openai      — Direct OpenAI API
+#   anthropic   — Anthropic Messages API
+#   ollama      — Local Ollama instance
+#   huggingface — Local HuggingFace transformers pipeline (no network needed)
+#
+# api_key_env   — Name of the environment variable (or .env key) that holds
+#                 the secret key. Omit for providers that need no key (ollama,
+#                 huggingface).
+# timeout       — Per-provider HTTP timeout in seconds (overrides global).
+# max_new_tokens— huggingface only: max tokens to generate (default: 512).
+# -----------------------------------------------------------------------------
 llm:
-  provider: "openrouter"
-  model: "meta-llama/llama-3.1-8b-instruct"
-  base_url: "https://openrouter.ai/api/v1"
+  # Global timeout (seconds) used when a provider does not set its own.
+  timeout: 120
+
+  providers:
+    # 1st choice — OpenRouter (broadest model selection, single API key)
+    - name: openrouter
+      model: openai/gpt-4o-mini
+      base_url: https://openrouter.ai/api/v1
+      api_key_env: OPENROUTER_API_KEY
+      timeout: 60
+
+    # 2nd choice — Anthropic (strong reasoning, different infra)
+    - name: anthropic
+      model: claude-3-haiku-20240307
+      base_url: https://api.anthropic.com
+      api_key_env: ANTHROPIC_API_KEY
+      timeout: 60
+
+    # 3rd choice — Direct OpenAI (reliable fallback if OpenRouter is down)
+    - name: openai
+      model: gpt-4o-mini
+      base_url: https://api.openai.com/v1
+      api_key_env: OPENAI_API_KEY
+      timeout: 60
+
+    # 4th choice — Local Ollama (works fully offline, requires Ollama running)
+    - name: ollama
+      model: mistral
+      base_url: http://localhost:11434
+      timeout: 120
+
+    # 5th choice — Local HuggingFace pipeline (last-resort, CPU-only, no key)
+    - name: huggingface
+      model: gpt2
+      max_new_tokens: 512
+
+# -----------------------------------------------------------------------------
+# Agent Registry
+# -----------------------------------------------------------------------------
+registry:
+  heartbeat_interval: 30      # seconds between heartbeat checks
+  stale_threshold: 90         # seconds before an agent is marked stale
+  dead_threshold: 180         # seconds before an agent is marked dead
+
+# -----------------------------------------------------------------------------
+# Server Ports
+# -----------------------------------------------------------------------------
+server:
+  core_port: 3000
+  twin_port: 3001
+
+# -----------------------------------------------------------------------------
+# Memory / Persistence
+# -----------------------------------------------------------------------------
+memory:
+  brain: memory/brain.json
+  state: memory/state.json
+  tasks: memory/tasks.json
+  registry: memory/registry.json
+  config_versions_dir: memory/config-versions
+  zangi_channels: memory/zangi-channels.json
+  hermes_jobs: memory/hermes-jobs.json
+  build_history: memory/build-history.json
+
+# -----------------------------------------------------------------------------
+# Dashboard
+# -----------------------------------------------------------------------------
+dashboard:
+  host: 0.0.0.0
+  port: 5000
+  debug: false
