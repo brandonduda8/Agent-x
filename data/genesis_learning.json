@@ -1,0 +1,21 @@
+{
+  "failures": [
+    {
+      "system": "Builder",
+      "error": "Read-only file system /public",
+      "timestamp": 1784395424.0898821,
+      "recommendation": "Use Genesis workspace manager instead of system directories."
+    },
+    {
+      "system": "Builder",
+      "error": "Read-only file system /public",
+      "timestamp": 1784396275.2857394,
+      "recommendation": "Use Genesis workspace manager instead of system directories."
+    }
+  ],
+  "lessons": [
+    "Use Genesis workspace manager instead of system directories.",
+    "Use Genesis workspace manager instead of system directories."
+  ],
+  "improvements": []
+}

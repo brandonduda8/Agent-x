@@ -1,0 +1,14 @@
+[
+  {
+    "id": "lead_1784402898",
+    "company": "Example Company",
+    "contact": "John",
+    "industry": "Software",
+    "status": "NEW",
+    "last_contact": null,
+    "follow_up": null,
+    "response": null,
+    "revenue": 0,
+    "created": 1784402898.1718025
+  }
+]

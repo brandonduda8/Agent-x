@@ -1,0 +1,39 @@
+{
+  "capabilities": {
+    "Revenue Automation": {
+      "id": "cap_8fb0e9df",
+      "name": "Revenue Automation",
+      "category": "business",
+      "skills": [
+        "sales",
+        "lead_generation",
+        "crm"
+      ],
+      "owner": "Revenue Agent",
+      "status": "AVAILABLE",
+      "created": 1784428139.7093399
+    },
+    "Software Development": {
+      "id": "cap_e5b51063",
+      "name": "Software Development",
+      "category": "engineering",
+      "skills": [
+        "coding",
+        "flutter",
+        "deployment"
+      ],
+      "owner": "Agent-X",
+      "status": "AVAILABLE",
+      "created": 1784428139.7098405
+    }
+  },
+  "systems": {
+    "Executive OS": {
+      "name": "Executive OS",
+      "version": "v1",
+      "purpose": "CEO decision management",
+      "registered": 1784428139.7102983
+    }
+  },
+  "events": []
+}

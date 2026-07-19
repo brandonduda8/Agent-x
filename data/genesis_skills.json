@@ -1,0 +1,40 @@
+{
+  "coding": {
+    "description": "Software development and programming",
+    "tools": [
+      "python",
+      "node",
+      "git"
+    ]
+  },
+  "research": {
+    "description": "Internet research and analysis",
+    "tools": [
+      "httpx",
+      "beautifulsoup4"
+    ]
+  },
+  "hardware_control": {
+    "description": "Android device intelligence",
+    "tools": [
+      "camera",
+      "sensor",
+      "battery",
+      "notification"
+    ]
+  },
+  "security": {
+    "description": "Protect Genesis system",
+    "tools": [
+      "sensors",
+      "notifications"
+    ]
+  },
+  "business": {
+    "description": "Revenue generation and SaaS planning",
+    "tools": [
+      "research",
+      "coding"
+    ]
+  }
+}

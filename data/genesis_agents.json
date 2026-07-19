@@ -1,0 +1,48 @@
+{
+  "agents": {
+    "builder": {
+      "name": "Builder",
+      "status": "ONLINE",
+      "capabilities": [
+        "coding",
+        "deployment",
+        "software"
+      ],
+      "registered": 1784399799.2615643,
+      "heartbeat": 1784399799.261565
+    },
+    "researcher": {
+      "name": "Researcher",
+      "status": "ONLINE",
+      "capabilities": [
+        "research",
+        "analysis",
+        "web"
+      ],
+      "registered": 1784399799.2622607,
+      "heartbeat": 1784399799.2622614
+    },
+    "revenue": {
+      "name": "Revenue",
+      "status": "ONLINE",
+      "capabilities": [
+        "business",
+        "marketing",
+        "monetization"
+      ],
+      "registered": 1784399799.2626822,
+      "heartbeat": 1784399799.2626827
+    },
+    "agent-x": {
+      "name": "Agent-X",
+      "status": "ONLINE",
+      "capabilities": [
+        "coding",
+        "automation"
+      ],
+      "registered": 1784426189.9438844,
+      "heartbeat": 1784426189.9438853
+    }
+  },
+  "events": []
+}

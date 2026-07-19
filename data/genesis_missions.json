@@ -1,0 +1,57 @@
+{
+  "missions": [
+    {
+      "id": "mission_1784399627",
+      "objective": "Build AI customer support SaaS",
+      "priority": 10,
+      "status": "ACTIVE",
+      "created": 1784399627.1133935
+    },
+    {
+      "id": "mission_1784399627",
+      "objective": "Create AI sales assistant",
+      "priority": 8,
+      "status": "QUEUED",
+      "created": 1784399627.1138039
+    },
+    {
+      "id": "mission_04d38c6c",
+      "objective": "Test unique mission",
+      "priority": 9,
+      "status": "QUEUED",
+      "created": 1784399707.5523448
+    },
+    {
+      "id": "mission_4800f194",
+      "objective": "AI sales outreach assistant",
+      "priority": 74,
+      "status": "COMPLETE",
+      "created": 1784399799.2584286,
+      "result": {
+        "controller": "GENESIS EXECUTIVE CONTROLLER v3",
+        "status": "COMPLETE",
+        "mission": "AI sales outreach assistant",
+        "execution": {
+          "planner": "GENESIS BRAIN PLANNER v1",
+          "objective": "AI sales outreach assistant",
+          "required_skills": [],
+          "assigned_agents": [],
+          "steps": [
+            "Analyze objective",
+            "Gather required skills",
+            "Assign agents",
+            "Execute mission",
+            "Evaluate results",
+            "Improve system"
+          ],
+          "timestamp": 1784399799.2595556,
+          "status": "COMPLETED",
+          "executed_agents": [],
+          "failures": []
+        },
+        "learning": []
+      },
+      "completed": 1784399799.2652571
+    }
+  ]
+}

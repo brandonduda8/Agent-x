@@ -1,0 +1,160 @@
+{
+  "products": [
+    {
+      "data": {
+        "idea": "AI Sales Assistant SaaS",
+        "stripe_products": [
+          {
+            "product_id": "prod_UuSdCnEKvjzZQr",
+            "price_id": "price_1Tudi3EdOwlqZbJONaJgME6S",
+            "name": "AI Sales Assistant SaaS - Starter",
+            "price": 29,
+            "timestamp": 1784402140.1680589
+          },
+          {
+            "product_id": "prod_UuSd2wnSrerACQ",
+            "price_id": "price_1Tudi4EdOwlqZbJOx5PRzBUM",
+            "name": "AI Sales Assistant SaaS - Professional",
+            "price": 99,
+            "timestamp": 1784402140.6570723
+          },
+          {
+            "product_id": "prod_UuSdhHpGPTm0RT",
+            "price_id": "price_1Tudi4EdOwlqZbJOkRt1RUhN",
+            "name": "AI Sales Assistant SaaS - Enterprise",
+            "price": 299,
+            "timestamp": 1784402141.1228807
+          }
+        ],
+        "timestamp": 1784402141.1229863
+      },
+      "timestamp": 1784402141.1229982
+    },
+    {
+      "data": {
+        "idea": "AI Sales Assistant SaaS",
+        "stripe_products": [
+          {
+            "product_id": "prod_UuSgcI8DnNNya1",
+            "price_id": "price_1TudkxEdOwlqZbJOwqYbraKo",
+            "name": "AI Sales Assistant SaaS - Starter",
+            "price": 29,
+            "timestamp": 1784402320.3413897
+          },
+          {
+            "product_id": "prod_UuSg2ZKShXSF1U",
+            "price_id": "price_1TudkyEdOwlqZbJORpVQLrMZ",
+            "name": "AI Sales Assistant SaaS - Professional",
+            "price": 99,
+            "timestamp": 1784402320.8708723
+          },
+          {
+            "product_id": "prod_UuSgcOgOUFKKW4",
+            "price_id": "price_1TudkzEdOwlqZbJOzLo59Gtj",
+            "name": "AI Sales Assistant SaaS - Enterprise",
+            "price": 299,
+            "timestamp": 1784402321.3826194
+          }
+        ],
+        "timestamp": 1784402321.3827364
+      },
+      "timestamp": 1784402321.382756
+    },
+    {
+      "data": {
+        "idea": "AI Appointment Scheduling SaaS",
+        "stripe_products": [
+          {
+            "product_id": "prod_UuStLitFXF2BVl",
+            "price_id": "price_1Tudy6EdOwlqZbJOghqdxYLw",
+            "name": "AI Appointment Scheduling SaaS - Starter",
+            "price": 29,
+            "timestamp": 1784403134.9952142
+          },
+          {
+            "product_id": "prod_UuStFbEc1DdMmi",
+            "price_id": "price_1Tudy7EdOwlqZbJOHLhpIHhS",
+            "name": "AI Appointment Scheduling SaaS - Professional",
+            "price": 99,
+            "timestamp": 1784403135.4636848
+          },
+          {
+            "product_id": "prod_UuSt1BjX9uM9yp",
+            "price_id": "price_1Tudy7EdOwlqZbJOpIFwM9Uh",
+            "name": "AI Appointment Scheduling SaaS - Enterprise",
+            "price": 299,
+            "timestamp": 1784403136.0264997
+          }
+        ],
+        "timestamp": 1784403136.0266087
+      },
+      "timestamp": 1784403136.0266278
+    }
+  ],
+  "checkouts": [
+    {
+      "data": {
+        "session_id": "cs_live_a1g3OikaCZUTrQhDkLGDE2HSP6EqyUbaZ8mL18bbrkzaCpaLNxN9IAkEFV",
+        "checkout_url": "https://checkout.stripe.com/c/pay/cs_live_a1g3OikaCZUTrQhDkLGDE2HSP6EqyUbaZ8mL18bbrkzaCpaLNxN9IAkEFV#fidnandhYHdWcXxpYCc%2FJ2FgY2RwaXEnKSdicGRmZGhqaWBTZHdsZGtxJz8nZmprcXdqaScpJ2R1bE5gfCc%2FJ3VuWmlsc2BaMDRRVnJBdUBhSnJpdF9nT0pJclMxbldzNENDZkdNUUNsfVBMQ043ZEZuUW5XaXJyaVZPQlxqa11SVzByQGFHdVFCdn9IdUNOT19jSEZyY09%2FVlNcUEg9VDw1NWBSTWY9V1RGJyknY3dqaFZgd3Ngdyc%2FcXdwYCknZ2RmbmJ3anBrYUZqaWp3Jz8nJmNjY2NjYycpJ2lkfGpwcVF8dWAnPyd2bGtiaWBabHFgaCcpJ2BrZGdpYFVpZGZgbWppYWB3dic%2FcXdwYHgl",
+        "price_id": "price_1Tudi3EdOwlqZbJONaJgME6S",
+        "timestamp": 1784402245.7191556
+      },
+      "timestamp": 1784402245.7191727
+    },
+    {
+      "data": {
+        "session_id": "cs_live_a1aD4HXB1Iedxm8ylkeBSImJ0W6Toe7DWK6MMXKyrQCjJR3xXfLXRByxVo",
+        "checkout_url": "https://checkout.stripe.com/c/pay/cs_live_a1aD4HXB1Iedxm8ylkeBSImJ0W6Toe7DWK6MMXKyrQCjJR3xXfLXRByxVo#fidnandhYHdWcXxpYCc%2FJ2FgY2RwaXEnKSdicGRmZGhqaWBTZHdsZGtxJz8nZmprcXdqaScpJ2R1bE5gfCc%2FJ3VuWmlsc2BaMDRRVnJBdUBhSnJpdF9nT0pJclMxbldzNENDZkdNUUNsfVBMQ043ZEZuUW5XaXJyaVZPQlxqa11SVzByQGFHdVFCdn9IdUNOT19jSEZyY09%2FVlNcUEg9VDw1NWBSTWY9V1RGJyknY3dqaFZgd3Ngdyc%2FcXdwYCknZ2RmbmJ3anBrYUZqaWp3Jz8nJmNjY2NjYycpJ2lkfGpwcVF8dWAnPyd2bGtiaWBabHFgaCcpJ2BrZGdpYFVpZGZgbWppYWB3dic%2FcXdwYHgl",
+        "price_id": "price_1TudkxEdOwlqZbJOwqYbraKo",
+        "timestamp": 1784402321.7811449
+      },
+      "timestamp": 1784402321.7811637
+    },
+    {
+      "data": {
+        "session_id": "cs_live_a1M7eoydXyBY4X2tBaK3YI3guNJag4pucPlLZSi14QL1eazHTrjxxJxFzm",
+        "checkout_url": "https://checkout.stripe.com/c/pay/cs_live_a1M7eoydXyBY4X2tBaK3YI3guNJag4pucPlLZSi14QL1eazHTrjxxJxFzm#fidnandhYHdWcXxpYCc%2FJ2FgY2RwaXEnKSdicGRmZGhqaWBTZHdsZGtxJz8nZmprcXdqaScpJ2R1bE5gfCc%2FJ3VuWmlsc2BaMDRRVnJBdUBhSnJpdF9nT0pJclMxbldzNENDZkdNUUNsfVBMQ043ZEZuUW5XaXJyaVZPQlxqa11SVzByQGFHdVFCdn9IdUNOT19jSEZyY09%2FVlNcUEg9VDw1NWBSTWY9V1RGJyknY3dqaFZgd3Ngdyc%2FcXdwYCknZ2RmbmJ3anBrYUZqaWp3Jz8nJmNjY2NjYycpJ2lkfGpwcVF8dWAnPyd2bGtiaWBabHFgaCcpJ2BrZGdpYFVpZGZgbWppYWB3dic%2FcXdwYHgl",
+        "price_id": "price_1TudkyEdOwlqZbJORpVQLrMZ",
+        "timestamp": 1784402322.1503448
+      },
+      "timestamp": 1784402322.1503716
+    },
+    {
+      "data": {
+        "session_id": "cs_live_a1oioUo78JyamHujCuqjTpXkD2PhenVnMPz1vmeRfET4z6NRtmFBmg40T7",
+        "checkout_url": "https://checkout.stripe.com/c/pay/cs_live_a1oioUo78JyamHujCuqjTpXkD2PhenVnMPz1vmeRfET4z6NRtmFBmg40T7#fidnandhYHdWcXxpYCc%2FJ2FgY2RwaXEnKSdicGRmZGhqaWBTZHdsZGtxJz8nZmprcXdqaScpJ2R1bE5gfCc%2FJ3VuWmlsc2BaMDRRVnJBdUBhSnJpdF9nT0pJclMxbldzNENDZkdNUUNsfVBMQ043ZEZuUW5XaXJyaVZPQlxqa11SVzByQGFHdVFCdn9IdUNOT19jSEZyY09%2FVlNcUEg9VDw1NWBSTWY9V1RGJyknY3dqaFZgd3Ngdyc%2FcXdwYCknZ2RmbmJ3anBrYUZqaWp3Jz8nJmNjY2NjYycpJ2lkfGpwcVF8dWAnPyd2bGtiaWBabHFgaCcpJ2BrZGdpYFVpZGZgbWppYWB3dic%2FcXdwYHgl",
+        "price_id": "price_1TudkzEdOwlqZbJOzLo59Gtj",
+        "timestamp": 1784402322.534753
+      },
+      "timestamp": 1784402322.534763
+    },
+    {
+      "data": {
+        "session_id": "cs_live_a1WhXe3ialcNh6BcAmePkpM7Rb4uKOpODcfydZu6Z66PNTVQMwyQ7kkNHt",
+        "checkout_url": "https://checkout.stripe.com/c/pay/cs_live_a1WhXe3ialcNh6BcAmePkpM7Rb4uKOpODcfydZu6Z66PNTVQMwyQ7kkNHt#fidnandhYHdWcXxpYCc%2FJ2FgY2RwaXEnKSdicGRmZGhqaWBTZHdsZGtxJz8nZmprcXdqaScpJ2R1bE5gfCc%2FJ3VuWmlsc2BaMDRRVnJBdUBhSnJpdF9nT0pJclMxbldzNENDZkdNUUNsfVBMQ043ZEZuUW5XaXJyaVZPQlxqa11SVzByQGFHdVFCdn9IdUNOT19jSEZyY09%2FVlNcUEg9VDw1NWBSTWY9V1RGJyknY3dqaFZgd3Ngdyc%2FcXdwYCknZ2RmbmJ3anBrYUZqaWp3Jz8nJmNjY2NjYycpJ2lkfGpwcVF8dWAnPyd2bGtiaWBabHFgaCcpJ2BrZGdpYFVpZGZgbWppYWB3dic%2FcXdwYHgl",
+        "price_id": "price_1Tudy6EdOwlqZbJOghqdxYLw",
+        "timestamp": 1784403136.6377969
+      },
+      "timestamp": 1784403136.6378105
+    },
+    {
+      "data": {
+        "session_id": "cs_live_a16GlVJhSWHR38OER8unQuq4UgFXj1qsfCLuKLDNBXEhGl6cqoepfrrHrh",
+        "checkout_url": "https://checkout.stripe.com/c/pay/cs_live_a16GlVJhSWHR38OER8unQuq4UgFXj1qsfCLuKLDNBXEhGl6cqoepfrrHrh#fidnandhYHdWcXxpYCc%2FJ2FgY2RwaXEnKSdicGRmZGhqaWBTZHdsZGtxJz8nZmprcXdqaScpJ2R1bE5gfCc%2FJ3VuWmlsc2BaMDRRVnJBdUBhSnJpdF9nT0pJclMxbldzNENDZkdNUUNsfVBMQ043ZEZuUW5XaXJyaVZPQlxqa11SVzByQGFHdVFCdn9IdUNOT19jSEZyY09%2FVlNcUEg9VDw1NWBSTWY9V1RGJyknY3dqaFZgd3Ngdyc%2FcXdwYCknZ2RmbmJ3anBrYUZqaWp3Jz8nJmNjY2NjYycpJ2lkfGpwcVF8dWAnPyd2bGtiaWBabHFgaCcpJ2BrZGdpYFVpZGZgbWppYWB3dic%2FcXdwYHgl",
+        "price_id": "price_1Tudy7EdOwlqZbJOHLhpIHhS",
+        "timestamp": 1784403137.1480703
+      },
+      "timestamp": 1784403137.148086
+    },
+    {
+      "data": {
+        "session_id": "cs_live_a1PdaFKVPXlFd55RXwegJPw0Fh8elSoLyaBiRBj7pqMtkbYGC4X3tNvF8m",
+        "checkout_url": "https://checkout.stripe.com/c/pay/cs_live_a1PdaFKVPXlFd55RXwegJPw0Fh8elSoLyaBiRBj7pqMtkbYGC4X3tNvF8m#fidnandhYHdWcXxpYCc%2FJ2FgY2RwaXEnKSdicGRmZGhqaWBTZHdsZGtxJz8nZmprcXdqaScpJ2R1bE5gfCc%2FJ3VuWmlsc2BaMDRRVnJBdUBhSnJpdF9nT0pJclMxbldzNENDZkdNUUNsfVBMQ043ZEZuUW5XaXJyaVZPQlxqa11SVzByQGFHdVFCdn9IdUNOT19jSEZyY09%2FVlNcUEg9VDw1NWBSTWY9V1RGJyknY3dqaFZgd3Ngdyc%2FcXdwYCknZ2RmbmJ3anBrYUZqaWp3Jz8nJmNjY2NjYycpJ2lkfGpwcVF8dWAnPyd2bGtiaWBabHFgaCcpJ2BrZGdpYFVpZGZgbWppYWB3dic%2FcXdwYHgl",
+        "price_id": "price_1Tudy7EdOwlqZbJOpIFwM9Uh",
+        "timestamp": 1784403137.7040706
+      },
+      "timestamp": 1784403137.7040808
+    }
+  ],
+  "sales": []
+}

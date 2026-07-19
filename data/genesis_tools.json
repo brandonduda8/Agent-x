@@ -1,0 +1,47 @@
+{
+  "python": {
+    "command": "python",
+    "category": "development",
+    "installed": true
+  },
+  "node": {
+    "command": "node",
+    "category": "development",
+    "installed": true
+  },
+  "git": {
+    "command": "git",
+    "category": "deployment",
+    "installed": true
+  },
+  "camera": {
+    "command": "termux-camera-photo",
+    "category": "hardware",
+    "installed": true
+  },
+  "battery": {
+    "command": "termux-battery-status",
+    "category": "hardware",
+    "installed": true
+  },
+  "location": {
+    "command": "termux-location",
+    "category": "hardware",
+    "installed": true
+  },
+  "sensor": {
+    "command": "termux-sensor",
+    "category": "hardware",
+    "installed": true
+  },
+  "notification": {
+    "command": "termux-notification",
+    "category": "hardware",
+    "installed": true
+  },
+  "clipboard": {
+    "command": "termux-clipboard-get",
+    "category": "hardware",
+    "installed": true
+  }
+}

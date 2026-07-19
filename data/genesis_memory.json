@@ -1,0 +1,271 @@
+{
+  "agents": {},
+  "missions": [],
+  "events": [],
+  "knowledge": [
+    {
+      "topic": "landing_page",
+      "information": {
+        "product": "AI Appointment Scheduling SaaS",
+        "file": "workspace/pages/AI_Appointment_Scheduling_SaaS.html",
+        "checkout": "https://checkout.stripe.com/c/pay/cs_live_a1WhXe3ialcNh6BcAmePkpM7Rb4uKOpODcfydZu6Z66PNTVQMwyQ7kkNHt#fidnandhYHdWcXxpYCc%2FJ2FgY2RwaXEnKSdicGRmZGhqaWBTZHdsZGtxJz8nZmprcXdqaScpJ2R1bE5gfCc%2FJ3VuWmlsc2BaMDRRVnJBdUBhSnJpdF9nT0pJclMxbldzNENDZkdNUUNsfVBMQ043ZEZuUW5XaXJyaVZPQlxqa11SVzByQGFHdVFCdn9IdUNOT19jSEZyY09%2FVlNcUEg9VDw1NWBSTWY9V1RGJyknY3dqaFZgd3Ngdyc%2FcXdwYCknZ2RmbmJ3anBrYUZqaWp3Jz8nJmNjY2NjYycpJ2lkfGpwcVF8dWAnPyd2bGtiaWBabHFgaCcpJ2BrZGdpYFVpZGZgbWppYWB3dic%2FcXdwYHgl",
+        "timestamp": 1784403137.7100515
+      },
+      "confidence": 0.9,
+      "timestamp": 1784403137.7100906
+    },
+    {
+      "topic": "marketing_campaign",
+      "information": {
+        "product": "AI Appointment Scheduling SaaS",
+        "audience": [
+          "small business owners",
+          "startup founders",
+          "online businesses",
+          "service companies"
+        ],
+        "pain_points": [
+          "too many customer questions",
+          "slow response times",
+          "lost sales opportunities",
+          "high support costs"
+        ],
+        "marketing_angles": [
+          "Reduce support costs with AI",
+          "Answer customers instantly 24/7",
+          "Convert more leads automatically"
+        ],
+        "content": [
+          "Educational posts",
+          "Customer success stories",
+          "Problem/solution videos",
+          "Product demonstrations"
+        ],
+        "outreach": [
+          "Cold email campaign",
+          "LinkedIn outreach",
+          "Direct message campaign"
+        ],
+        "timestamp": 1784403137.7109902
+      },
+      "confidence": 0.7,
+      "timestamp": 1784403137.7110128
+    },
+    {
+      "topic": "content_campaign",
+      "information": {
+        "product": "AI Appointment Scheduling SaaS",
+        "audience": "small business owners",
+        "angle": "Reduce support costs with AI",
+        "linkedin_post": "\n\ud83d\ude80 AI Appointment Scheduling SaaS\n\nBusinesses are losing time answering the same questions every day.\n\nWhat if AI could handle customer conversations instantly?\n\n\u2705 Faster responses\n\u2705 More qualified leads\n\u2705 Lower support costs\n\nThe future of business is intelligent automation.\n",
+        "twitter_post": "\nBuilding smarter businesses with AI Appointment Scheduling SaaS.\n\nAI automation helps companies:\n- save time\n- respond faster\n- increase revenue\n\nThe next generation of companies will be AI-powered.\n",
+        "cold_email": "\nSubject: Quick question about your customer support\n\nHi,\n\nI noticed many businesses struggle with responding quickly to customers.\n\nWe built AI Appointment Scheduling SaaS to help automate conversations and improve response times.\n\nWould you be interested in seeing how it works?\n\nThanks\n",
+        "video_script": "\nHook:\nYour customers are waiting too long.\n\nProblem:\nSlow responses lose sales.\n\nSolution:\nAI Appointment Scheduling SaaS uses AI automation to respond instantly.\n\nCall to action:\nTry it today.\n",
+        "timestamp": 1784403137.7118812
+      },
+      "confidence": 0.8,
+      "timestamp": 1784403137.7118943
+    },
+    {
+      "topic": "outreach_campaign",
+      "information": {
+        "product": "AI Appointment Scheduling SaaS",
+        "audience": "small business owners",
+        "channels": [
+          "LinkedIn",
+          "Email",
+          "Direct Messages"
+        ],
+        "messages": [
+          {
+            "channel": "LinkedIn",
+            "message": "Hi, I noticed businesses like yours are looking for better ways to improve customer response times. We built AI Appointment Scheduling SaaS to help automate conversations and increase efficiency. Would you be open to seeing how it works?"
+          },
+          {
+            "channel": "Email",
+            "message": "Subject: Improving your customer workflow\n\nHi,\n\nMany small business owners spend hours handling repetitive customer requests.\n\nAI Appointment Scheduling SaaS helps automate those conversations and save valuable time.\n\nWould you like a quick demo?"
+          },
+          {
+            "channel": "DM",
+            "message": "Hey! Quick question \u2014 are you currently using AI to automate customer conversations? We built AI Appointment Scheduling SaaS to help businesses respond faster."
+          }
+        ],
+        "follow_up": [
+          "Follow up after 3 days",
+          "Share customer benefit",
+          "Offer demo",
+          "Final check-in"
+        ],
+        "timestamp": 1784403137.712825
+      },
+      "confidence": 0.8,
+      "timestamp": 1784403137.712836
+    },
+    {
+      "topic": "sales_action",
+      "information": {
+        "lead": "lead_1784402898",
+        "action": "SEND_INTRO_MESSAGE",
+        "message": "Hello John, we help Software companies automate customer workflows with AI. Would you like to see how it works?",
+        "timestamp": 1784403137.7138703
+      },
+      "confidence": 0.8,
+      "timestamp": 1784403137.7138803
+    },
+    {
+      "topic": "growth_cycle",
+      "information": {
+        "idea": "AI Appointment Scheduling SaaS",
+        "status": "COMPLETE",
+        "timestamp": 1784403137.7149258
+      },
+      "confidence": 0.9,
+      "timestamp": 1784403137.7149305
+    }
+  ],
+  "lessons": [],
+  "performance": {},
+  "memories": [
+    {
+      "id": "memory_c32568c3",
+      "agent": "Revenue Agent",
+      "category": "experience",
+      "content": {
+        "id": "experience_6ef577fa",
+        "task": "Find AI automation customers",
+        "result": {
+          "success": true,
+          "leads": 25
+        },
+        "timestamp": 1784479670.5090725
+      },
+      "created": 1784479670.5093462
+    },
+    {
+      "id": "memory_82aeecb3",
+      "agent": "Revenue Agent",
+      "category": "lesson",
+      "content": "AI companies respond better to personalized outreach",
+      "created": 1784479670.5102158
+    },
+    {
+      "id": "memory_f61ecf4e",
+      "agent": "Revenue Agent",
+      "category": "lesson",
+      "content": {
+        "id": "learning_memory_60107196",
+        "agent": "Revenue Agent",
+        "learning": {
+          "mission": "Acquire first AI automation customers",
+          "performance": 1.0,
+          "lesson": "Personalized outreach improves conversion"
+        },
+        "timestamp": 1784479734.937175
+      },
+      "created": 1784479734.937474
+    },
+    {
+      "id": "memory_d25056b0",
+      "agent": "Genesis CEO",
+      "category": "lesson",
+      "content": {
+        "id": "cycle_memory_8a517d1d",
+        "mission": "Acquire first AI automation customers",
+        "status": "COMPLETE",
+        "execution": {
+          "successful_tasks": 6
+        },
+        "learning": {
+          "performance": 1.0,
+          "lesson": "Scale outreach workflow"
+        },
+        "timestamp": 1784479795.0100315
+      },
+      "created": 1784479795.0103002
+    },
+    {
+      "id": "memory_417e98af",
+      "agent": "Genesis CEO",
+      "category": "lesson",
+      "content": {
+        "id": "cycle_memory_47711d72",
+        "mission": "Acquire first AI automation customers",
+        "status": "COMPLETE",
+        "execution": null,
+        "learning": null,
+        "timestamp": 1784479953.1578584
+      },
+      "created": 1784479953.1582406
+    },
+    {
+      "id": "memory_e29ba005",
+      "agent": "Genesis CEO",
+      "category": "lesson",
+      "content": {
+        "id": "cycle_memory_9b9478d6",
+        "mission": "Acquire first AI automation customers",
+        "status": "COMPLETE",
+        "execution": null,
+        "learning": null,
+        "timestamp": 1784481632.8397608
+      },
+      "created": 1784481632.84004
+    },
+    {
+      "id": "memory_d74069dd",
+      "agent": "Genesis CEO",
+      "category": "lesson",
+      "content": {
+        "id": "cycle_memory_f24bc189",
+        "mission": "Acquire first AI automation customers",
+        "status": "COMPLETE",
+        "execution": null,
+        "learning": null,
+        "timestamp": 1784485221.1365044
+      },
+      "created": 1784485221.136802
+    },
+    {
+      "id": "memory_26b05736",
+      "agent": "Genesis CEO",
+      "category": "lesson",
+      "content": {
+        "id": "cycle_memory_b1335665",
+        "mission": "Acquire first AI automation customers",
+        "status": "COMPLETE",
+        "execution": null,
+        "learning": null,
+        "timestamp": 1784485399.6994343
+      },
+      "created": 1784485399.699754
+    },
+    {
+      "id": "memory_f47624d3",
+      "agent": "Genesis CEO",
+      "category": "lesson",
+      "content": {
+        "id": "cycle_memory_cd8dc684",
+        "mission": "Acquire first AI automation customers",
+        "status": "COMPLETE",
+        "execution": null,
+        "learning": null,
+        "timestamp": 1784485528.3564284
+      },
+      "created": 1784485528.3567805
+    },
+    {
+      "id": "memory_363b8e13",
+      "agent": "Genesis CEO",
+      "category": "lesson",
+      "content": {
+        "id": "cycle_memory_cc619c1f",
+        "mission": "Acquire first AI automation customers",
+        "status": "COMPLETE",
+        "execution": null,
+        "learning": null,
+        "timestamp": 1784485654.3464339
+      },
+      "created": 1784485654.3468208
+    }
+  ]
+}
