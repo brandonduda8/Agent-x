@@ -6,3 +6,4 @@ state/
 .pids/
 .env
 .env.*
+__pycache__/
