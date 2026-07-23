@@ -1,0 +1,15 @@
+{
+  "genesis_revenue_agent": {
+    "agent": "genesis_revenue_agent",
+    "capabilities": [
+      "sales",
+      "lead_generation",
+      "revenue_strategy"
+    ],
+    "model": "reasoning",
+    "status": "ONLINE",
+    "tasks_completed": 0,
+    "errors": 1,
+    "created": "2026-07-21T21:29:51.154142"
+  }
+}

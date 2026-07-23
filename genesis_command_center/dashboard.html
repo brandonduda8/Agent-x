@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<title>Genesis Command Center</title>
+
+<style>
+
+body{
+
+background:#0d1117;
+color:#00ff99;
+font-family:Arial;
+
+}
+
+.card{
+
+border:1px solid #00ff99;
+
+padding:15px;
+
+margin:15px;
+
+border-radius:10px;
+
+}
+
+button{
+
+padding:10px;
+
+margin:5px;
+
+font-size:16px;
+
+}
+
+pre{
+
+white-space:pre-wrap;
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h1>GENESIS COMMAND CENTER</h1>
+
+<div class="card">
+
+<h2>Operator</h2>
+
+<pre id="profile"></pre>
+
+</div>
+
+<div class="card">
+
+<h2>Memory</h2>
+
+<pre id="memory"></pre>
+
+</div>
+
+<div class="card">
+
+<h2>Mission Controls</h2>
+
+<button onclick="alert('Income Mission')">Income</button>
+
+<button onclick="alert('Revenue Mission')">Revenue</button>
+
+<button onclick="alert('Housing Mission')">Housing</button>
+
+<button onclick="alert('Development Mission')">Development</button>
+
+</div>
+
+<script>
+
+fetch("/api/status")
+
+.then(r=>r.json())
+
+.then(data=>{
+
+document.getElementById("profile").textContent=
+JSON.stringify(data.profile,null,2);
+
+document.getElementById("memory").textContent=
+JSON.stringify(data.memory,null,2);
+
+});
+
+</script>
+
+</body>
+
+</html>
+

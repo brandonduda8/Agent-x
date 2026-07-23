@@ -8,7 +8,7 @@ class GenesisMissionQueue:
 
     def __init__(self):
 
-        self.name = "GENESIS MISSION QUEUE v1.1"
+        self.name = "GENESIS MISSION QUEUE v3"
 
         self.path = "data/genesis_missions.json"
 
@@ -27,11 +27,19 @@ class GenesisMissionQueue:
 
             try:
 
-                with open(self.path,"r") as f:
+                with open(
+                    self.path,
+                    "r"
+                ) as f:
 
-                    return json.load(f)
+                    data = json.load(f)
 
-            except:
+                    if "missions" not in data:
+                        data["missions"] = []
+
+                    return data
+
+            except Exception:
 
                 pass
 
@@ -44,7 +52,10 @@ class GenesisMissionQueue:
 
     def save(self):
 
-        with open(self.path,"w") as f:
+        with open(
+            self.path,
+            "w"
+        ) as f:
 
             json.dump(
                 self.queue,
@@ -54,21 +65,45 @@ class GenesisMissionQueue:
 
 
 
-    def add(self, objective, priority=5):
+    def add(
+        self,
+        objective,
+        priority=5,
+        agents=None,
+        skills=None,
+        team=None
+    ):
+
 
         mission = {
 
             "id":
                 f"mission_{uuid.uuid4().hex[:8]}",
 
+
             "objective":
                 objective,
+
 
             "priority":
                 priority,
 
+
+            "assigned_agents":
+                agents or [],
+
+
+            "required_skills":
+                skills or [],
+
+
+            "team":
+                team or [],
+
+
             "status":
                 "QUEUED",
+
 
             "created":
                 time.time()
@@ -76,16 +111,42 @@ class GenesisMissionQueue:
         }
 
 
+
         self.queue["missions"].append(
             mission
         )
 
+
         self.save()
 
 
-        print(
-            f"📋 Mission queued: {objective}"
-        )
+
+        if team:
+
+            print(
+                "📋 Mission queued with intelligent team:"
+            )
+
+            for member in team:
+
+                print(
+                    f"   🤖 {member['agent']} -> {member.get('matched_skills', [])}"
+                )
+
+
+        elif agents:
+
+            print(
+                f"📋 Mission queued with agents: {agents}"
+            )
+
+
+        else:
+
+            print(
+                f"📋 Mission queued: {objective}"
+            )
+
 
 
         return mission
@@ -94,13 +155,17 @@ class GenesisMissionQueue:
 
     def next(self):
 
+
         queued = [
 
-            m for m in self.queue["missions"]
+            m
+
+            for m in self.queue["missions"]
 
             if m["status"] == "QUEUED"
 
         ]
+
 
 
         if not queued:
@@ -110,14 +175,20 @@ class GenesisMissionQueue:
 
 
         queued.sort(
-            key=lambda x:x["priority"],
+
+            key=lambda x: x["priority"],
+
             reverse=True
+
         )
+
 
 
         mission = queued[0]
 
+
         mission["status"] = "ACTIVE"
+
 
         self.save()
 
@@ -126,11 +197,19 @@ class GenesisMissionQueue:
 
 
 
-    def complete(self, mission_id, result):
+
+    def complete(
+        self,
+        mission_id,
+        result
+    ):
+
 
         for mission in self.queue["missions"]:
 
+
             if mission["id"] == mission_id:
+
 
                 mission["status"] = "COMPLETE"
 
@@ -139,27 +218,44 @@ class GenesisMissionQueue:
                 mission["completed"] = time.time()
 
 
+
         self.save()
 
 
 
     def report(self):
 
+
         return {
+
 
             "system":
                 self.name,
 
+
             "missions":
                 len(self.queue["missions"]),
+
 
             "queued":
                 len(
                     [
-                        m for m in self.queue["missions"]
-                        if m["status"]=="QUEUED"
+                        m
+                        for m in self.queue["missions"]
+                        if m["status"] == "QUEUED"
                     ]
                 ),
+
+
+            "active":
+                len(
+                    [
+                        m
+                        for m in self.queue["missions"]
+                        if m["status"] == "ACTIVE"
+                    ]
+                ),
+
 
             "timestamp":
                 time.time()

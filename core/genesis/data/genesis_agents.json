@@ -1,0 +1,18 @@
+{
+  "agents": [
+    {
+      "id": "agent_1cd187e9",
+      "name": "Genesis Local Business Intelligence Agent",
+      "role": "Market Intelligence Specialist",
+      "skills": [
+        "local SEO",
+        "competitor research",
+        "business analysis",
+        "lead discovery"
+      ],
+      "mission": "Find profitable local business automation opportunities",
+      "status": "PROPOSED",
+      "created": 1784572873.1565826
+    }
+  ]
+}

@@ -1,0 +1,50 @@
+{
+  "operator": {
+    "mission": [
+      "secure immediate income",
+      "housing stability",
+      "career transition",
+      "technology growth",
+      "financial independence"
+    ],
+    "experience": [
+      "customer service",
+      "restaurant operations",
+      "hard labor",
+      "team collaboration",
+      "problem solving",
+      "working under pressure"
+    ],
+    "skills": [
+      "communication",
+      "customer relations",
+      "adaptability",
+      "reliability",
+      "learning technology"
+    ],
+    "career_targets": [
+      "technical support",
+      "help desk",
+      "remote customer support",
+      "AI automation assistant",
+      "computer science pathway",
+      "software development pathway"
+    ],
+    "work_preferences": [
+      "remote",
+      "hybrid",
+      "relocation",
+      "flexible schedule"
+    ],
+    "location": {
+      "current": "Lisle, Illinois",
+      "willing_to_relocate": true
+    },
+    "priorities": {
+      "income": "CRITICAL",
+      "housing": "CRITICAL",
+      "technology_growth": "HIGH",
+      "entrepreneurship": "HIGH"
+    }
+  }
+}

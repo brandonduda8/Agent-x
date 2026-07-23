@@ -1,0 +1,20 @@
+[
+  {
+    "id": "lead_5f33ff0e",
+    "company": "Dental Local Business",
+    "contact": "unknown",
+    "problem": "Manual repetitive workflows",
+    "opportunity": "AI workflow automation",
+    "status": "DISCOVERED",
+    "created": 1784539423.0394375
+  },
+  {
+    "id": "lead_41972807",
+    "company": "Dental Service Company",
+    "contact": "unknown",
+    "problem": "Slow customer response",
+    "opportunity": "AI customer communication system",
+    "status": "DISCOVERED",
+    "created": 1784539423.0399947
+  }
+]

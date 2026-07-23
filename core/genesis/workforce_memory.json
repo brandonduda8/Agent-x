@@ -1,0 +1,119 @@
+{
+    "workers": [
+        {
+            "id": "agent_1b593ed5",
+            "name": "Genesis Coding Agent",
+            "capability": "Coding",
+            "skills": [
+                "Python",
+                "AI Agents",
+                "APIs",
+                "Automation",
+                "Debugging"
+            ],
+            "missions": 0,
+            "performance": 100,
+            "status": "ONLINE"
+        },
+        {
+            "id": "agent_aa6e3d85",
+            "name": "Genesis Revenue Agent",
+            "capability": "Revenue",
+            "skills": [
+                "Sales",
+                "Outreach",
+                "Lead Generation",
+                "Proposals",
+                "Client Acquisition"
+            ],
+            "missions": 0,
+            "performance": 100,
+            "status": "ONLINE"
+        },
+        {
+            "id": "agent_4ed8144d",
+            "name": "Genesis Research Agent",
+            "capability": "Research",
+            "skills": [
+                "Market Research",
+                "Analysis",
+                "Opportunity Discovery",
+                "Data Collection"
+            ],
+            "missions": 0,
+            "performance": 100,
+            "status": "ONLINE"
+        },
+        {
+            "id": "agent_0fc76bb0",
+            "name": "Genesis Career Agent",
+            "capability": "Career",
+            "skills": [
+                "Job Search",
+                "Applications",
+                "Resume Optimization",
+                "Opportunity Research"
+            ],
+            "missions": 0,
+            "performance": 100,
+            "status": "ONLINE"
+        },
+        {
+            "id": "agent_d67c3691",
+            "name": "Genesis Coding Agent",
+            "capability": "Coding",
+            "skills": [
+                "Python",
+                "AI Agents",
+                "APIs",
+                "Automation",
+                "Debugging"
+            ],
+            "missions": 0,
+            "performance": 100,
+            "status": "ONLINE"
+        },
+        {
+            "id": "execution_11e16162",
+            "mission": "Build Genesis Revenue Automation System",
+            "tasks": [
+                {
+                    "id": "task_b6c47f17",
+                    "role": "Software Engineer",
+                    "objective": "Build Genesis Revenue Automation System",
+                    "status": "ASSIGNED",
+                    "created": 1784571239.1642141,
+                    "agent": "Genesis Software Engineer Agent"
+                },
+                {
+                    "id": "task_5d9cdc02",
+                    "role": "AI Engineer",
+                    "objective": "Build Genesis Revenue Automation System",
+                    "status": "ASSIGNED",
+                    "created": 1784571239.1642299,
+                    "agent": "Genesis AI Engineer Agent"
+                },
+                {
+                    "id": "task_93b21509",
+                    "role": "QA Scientist",
+                    "objective": "Build Genesis Revenue Automation System",
+                    "status": "ASSIGNED",
+                    "created": 1784571239.1642404,
+                    "agent": "Genesis Software Engineer Agent"
+                },
+                {
+                    "id": "task_ee5c2014",
+                    "role": "Knowledge Engineer",
+                    "objective": "Build Genesis Revenue Automation System",
+                    "status": "ASSIGNED",
+                    "created": 1784571239.1642513,
+                    "agent": "Genesis Knowledge Engineer Agent"
+                }
+            ],
+            "status": "ASSIGNED",
+            "started": 1784571239.1641536,
+            "completed_assignment": 4
+        }
+    ],
+    "updated": 1784571239.1642606
+}

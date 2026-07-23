@@ -1,0 +1,19 @@
+{
+  "taskId": "b279dba9-7fd7-4baf-b3b4-d08626486603",
+  "type": "content-generation",
+  "receivedAt": "2026-07-20T05:51:14.816Z",
+  "status": "completed",
+  "steps": [],
+  "artifacts": [],
+  "output": {
+    "ok": true,
+    "type": "content",
+    "artifact": "/data/data/com.termux/files/home/claw-os/digital-twin/artifacts/b279dba9-7fd7-4baf-b3b4-d08626486603-content-draft.json",
+    "draft": {
+      "title": "AI automation agency offer",
+      "audience": "dental clinics",
+      "body": "Auto-generated content draft from Digital Twin.",
+      "created": "2026-07-20T05:51:14.820Z"
+    }
+  }
+}

@@ -1,99 +1,94 @@
 import time
-import uuid
+
+from core.genesis.agent_registry import agent_registry
+from core.genesis.agent_matching_engine import agent_matching_engine
+from core.genesis.genesis_workforce_controller import genesis_workforce_controller
 
 
 class GenesisWorkforceSyncEngine:
+    """
+    GENESIS WORKFORCE SYNC ENGINE v1
+
+    Connects:
+
+    Agent Registry
+          |
+          v
+    Matching Engine
+          |
+          v
+    Workforce Controller
+    """
+
 
     def __init__(self):
 
         self.system = "GENESIS WORKFORCE SYNC ENGINE v1"
 
-        self.synced_agents = []
+        self.sync_history = []
 
 
-    def sync_agent(
-        self,
-        agent
-    ):
 
-        record = {
+    def sync_agents(self):
 
-            "id":
-                "sync_" + uuid.uuid4().hex[:8],
+        count = 0
 
-            "agent":
-                agent["name"],
 
-            "skills":
-                agent.get("skills", []),
+        for name, agent in agent_registry.agents.items():
 
-            "status":
-                "AVAILABLE",
+            agent_matching_engine.register_agent(
+                name,
+                agent["skills"]
+            )
 
-            "timestamp":
-                time.time()
+            count += 1
+
+
+        genesis_workforce_controller.agent_registry = agent_registry
+
+        genesis_workforce_controller.agent_matching_engine = (
+            agent_matching_engine
+        )
+
+
+        result = {
+
+            "system": self.system,
+
+            "agents_synced": count,
+
+            "matching_engine_agents":
+            len(agent_matching_engine.agents),
+
+            "status": "CONNECTED",
+
+            "timestamp": time.time()
 
         }
 
 
-        self.synced_agents.append(
-            record
-        )
+        self.sync_history.append(result)
 
 
         print(
-            f"🔄 Workforce synced: {agent['name']}"
+            "🧬 Workforce synchronized"
         )
 
 
-        return record
+        return result
 
 
 
-    def sync_workforce(
-        self,
-        agents
-    ):
-
-        results = []
-
-        for agent in agents:
-
-            results.append(
-                self.sync_agent(agent)
-            )
-
+    def report(self):
 
         return {
 
-            "id":
-                "sync_batch_" + uuid.uuid4().hex[:8],
+            "system": self.system,
 
-            "agents":
-                results,
+            "syncs":
+            len(self.sync_history),
 
-            "status":
-                "COMPLETE",
-
-            "timestamp":
-                time.time()
-
-        }
-
-
-
-    def status(self):
-
-        return {
-
-            "system":
-                self.system,
-
-            "synced_agents":
-                len(self.synced_agents),
-
-            "timestamp":
-                time.time()
+            "timestamp": time.time()
 
         }
 

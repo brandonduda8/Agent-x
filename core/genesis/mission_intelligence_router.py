@@ -1,95 +1,235 @@
 import time
-import uuid
+
+
+from core.genesis.agent_matching_engine import (
+    agent_matching_engine
+)
 
 
 class GenesisMissionIntelligenceRouter:
 
+    """
+    GENESIS MISSION INTELLIGENCE ROUTER v3
+
+    Converts objectives into:
+
+    - required capabilities
+    - dynamic agent teams
+    - execution requirements
+    """
+
+
     def __init__(self):
 
-        self.system = "GENESIS MISSION INTELLIGENCE ROUTER v1"
+        self.system = (
+            "GENESIS MISSION INTELLIGENCE ROUTER v3"
+        )
 
-        self.missions = []
-
-
-
-    def analyze_objective(self, objective):
-
-        text = objective.lower()
-
-        capabilities = []
+        self.decisions = []
 
 
-        if any(word in text for word in [
-            "customer",
-            "lead",
-            "sales",
-            "revenue",
-            "client"
-        ]):
+    def register_default_agents(self):
 
-            capabilities.extend([
+        if agent_matching_engine.agents:
+            return
+
+
+        agent_matching_engine.register_agent(
+            "Research Agent",
+            [
+                "market_research",
                 "lead_generation",
-                "sales",
-                "crm"
-            ])
+                "prospect_analysis"
+            ]
+        )
 
 
-
-        if any(word in text for word in [
-            "build",
-            "software",
-            "app",
-            "code",
-            "automation"
-        ]):
-
-            capabilities.extend([
-                "coding",
-                "deployment",
-                "automation"
-            ])
+        agent_matching_engine.register_agent(
+            "Revenue Agent",
+            [
+                "sales_pipeline",
+                "outreach",
+                "offer_creation"
+            ]
+        )
 
 
-
-        if any(word in text for word in [
-            "research",
-            "analyze",
-            "market"
-        ]):
-
-            capabilities.append(
-                "research"
-            )
+        agent_matching_engine.register_agent(
+            "Automation Agent",
+            [
+                "workflow_automation",
+                "process_design",
+                "integration"
+            ]
+        )
 
 
-
-        return list(
-            set(capabilities)
+        agent_matching_engine.register_agent(
+            "Sales Agent",
+            [
+                "sales_pipeline",
+                "outreach",
+                "closing"
+            ]
         )
 
 
 
-    def create_execution_plan(
+    def analyze(
         self,
-        objective,
-        capabilities
+        objective
     ):
 
-        mission = {
+
+        self.register_default_agents()
+
+
+        text = objective.lower()
+
+
+        skills = []
+
+
+
+        if any(word in text for word in [
+            "client",
+            "customer",
+            "revenue",
+            "sales",
+            "business",
+            "income",
+            "automation"
+        ]):
+
+            skills.extend([
+
+                "market_research",
+
+                "lead_generation",
+
+                "sales_pipeline",
+
+                "outreach",
+
+                "offer_creation"
+
+            ])
+
+
+
+        if any(word in text for word in [
+
+            "automation",
+
+            "workflow",
+
+            "system",
+
+            "process"
+
+        ]):
+
+
+            skills.append(
+                "workflow_automation"
+            )
+
+
+
+        if any(word in text for word in [
+
+            "app",
+
+            "software",
+
+            "platform",
+
+            "code",
+
+            "build"
+
+        ]):
+
+
+            skills.append(
+                "software_creation"
+            )
+
+
+
+        if not skills:
+
+            skills.append(
+                "market_research"
+            )
+
+
+
+        mission_preview = {
 
             "id":
-                "mission_"
-                +
-                uuid.uuid4().hex[:8],
+                f"mission_{int(time.time())}",
+
+            "required_capabilities":
+                list(set(skills))
+
+        }
+
+
+
+        match = (
+
+            agent_matching_engine
+            .match(
+                mission_preview
+            )
+
+        )
+
+
+
+        team = match.get(
+            "team",
+            []
+        )
+
+
+
+        decision = {
+
+
+            "id":
+                f"decision_{int(time.time())}",
+
 
             "objective":
                 objective,
 
-            "required_capabilities":
-                capabilities,
+
+            "assigned_agents":
+                [
+                    member["agent"]
+                    for member in team
+                ],
+
+
+            "team":
+                team,
+
+
+            "required_skills":
+                    list(set(skills)),
+                    "required_capabilities":
+                    list(set(skills)),
+
+
+            "priority":
+                10,
+
 
             "status":
-                "PLANNED",
+                "READY",
+
 
             "created":
                 time.time()
@@ -97,46 +237,44 @@ class GenesisMissionIntelligenceRouter:
         }
 
 
-        self.missions.append(
-            mission
+
+        self.decisions.append(
+            decision
         )
+
 
 
         print(
-            "🧬 Mission intelligence plan created"
+            "🧠 Mission Intelligence:"
         )
 
 
-        return mission
+        for member in team:
+
+            print(
+
+                f"   🤖 {member['agent']} -> "
+                f"{member['matched_skills']}"
+
+            )
+
+
+        return decision
 
 
 
-    def route(
-        self,
-        objective
-    ):
+    def route(self, objective):
+        return self.analyze(objective)
 
-        capabilities = self.analyze_objective(
-            objective
-        )
-
-
-        return self.create_execution_plan(
-            objective,
-            capabilities
-        )
-
-
-
-    def report(self):
+    def status(self):
 
         return {
 
             "system":
                 self.system,
 
-            "missions":
-                len(self.missions),
+            "decisions":
+                len(self.decisions),
 
             "timestamp":
                 time.time()
@@ -145,4 +283,6 @@ class GenesisMissionIntelligenceRouter:
 
 
 
-mission_intelligence_router = GenesisMissionIntelligenceRouter()
+mission_intelligence_router = (
+    GenesisMissionIntelligenceRouter()
+)

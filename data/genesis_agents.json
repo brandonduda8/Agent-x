@@ -8,8 +8,8 @@
         "deployment",
         "software"
       ],
-      "registered": 1784399799.2615643,
-      "heartbeat": 1784399799.261565
+      "registered": 1784748726.644248,
+      "heartbeat": 1784748726.6442492
     },
     "researcher": {
       "name": "Researcher",
@@ -19,8 +19,8 @@
         "analysis",
         "web"
       ],
-      "registered": 1784399799.2622607,
-      "heartbeat": 1784399799.2622614
+      "registered": 1784748726.6450074,
+      "heartbeat": 1784748726.6450083
     },
     "revenue": {
       "name": "Revenue",
@@ -30,8 +30,8 @@
         "marketing",
         "monetization"
       ],
-      "registered": 1784399799.2626822,
-      "heartbeat": 1784399799.2626827
+      "registered": 1784748726.6455922,
+      "heartbeat": 1784748726.645593
     },
     "agent-x": {
       "name": "Agent-X",
@@ -42,6 +42,39 @@
       ],
       "registered": 1784426189.9438844,
       "heartbeat": 1784426189.9438853
+    },
+    "builder_agent": {
+      "name": "Builder Agent",
+      "status": "ONLINE",
+      "capabilities": [
+        "coding",
+        "deployment",
+        "software"
+      ],
+      "registered": 1784750566.1890228,
+      "heartbeat": 1784750566.189024
+    },
+    "research_agent": {
+      "name": "Research Agent",
+      "status": "ONLINE",
+      "capabilities": [
+        "research",
+        "analysis",
+        "market intelligence"
+      ],
+      "registered": 1784750566.1901762,
+      "heartbeat": 1784750566.1901774
+    },
+    "revenue_agent": {
+      "name": "Revenue Agent",
+      "status": "ONLINE",
+      "capabilities": [
+        "sales",
+        "marketing",
+        "client acquisition"
+      ],
+      "registered": 1784750566.1908953,
+      "heartbeat": 1784750566.190896
     }
   },
   "events": []

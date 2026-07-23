@@ -1,85 +1,88 @@
 import time
+import uuid
 
 
 class GenesisTaskRouter:
 
     def __init__(self):
 
-        self.system = "GENESIS TASK ROUTER v1"
+        self.name = (
+            "GENESIS TASK ROUTER v1"
+        )
 
         self.tasks = []
 
 
-    def assign(
-        self,
-        task,
-        worker
-    ):
+        self.agent_map = {
 
-        assignment = {
+            "research":
+                [
+                    "Career Command Center",
+                    "Opportunity Scanner"
+                ],
 
-            "task": task,
+            "revenue":
+                [
+                    "Daily Revenue Loop"
+                ],
 
-            "worker": worker,
-
-            "status": "ASSIGNED",
-
-            "timestamp": time.time()
+            "learning":
+                [
+                    "Learning Engine"
+                ]
 
         }
 
-        self.tasks.append(
-            assignment
+
+    def create_task(
+        self,
+        objective,
+        category
+    ):
+
+        task = {
+
+            "id":
+                "task_"
+                +
+                uuid.uuid4().hex[:8],
+
+            "objective":
+                objective,
+
+            "category":
+                category,
+
+            "assigned_agents":
+                self.agent_map.get(
+                    category,
+                    []
+                ),
+
+            "status":
+                "READY",
+
+            "created":
+                time.time()
+
+        }
+
+
+        self.tasks.append(task)
+
+
+        print(
+            "🎯 Task Created:",
+            objective
         )
 
         print(
-            f"🧬 Task assigned: {task} -> {worker}"
+            "🤖 Assigned:",
+            task["assigned_agents"]
         )
 
-        return assignment
 
-
-
-    def route_mission(
-        self,
-        objective
-    ):
-
-        assignments = []
-
-
-        if "revenue" in objective.lower() or "client" in objective.lower():
-
-            assignments.append(
-                self.assign(
-                    "Create high value offer",
-                    "Offer Builder"
-                )
-            )
-
-            assignments.append(
-                self.assign(
-                    "Find potential customers",
-                    "Lead Hunter"
-                )
-            )
-
-            assignments.append(
-                self.assign(
-                    "Create marketing content",
-                    "Content Agent"
-                )
-            )
-
-            assignments.append(
-                self.assign(
-                    "Prepare outreach",
-                    "Sales Agent"
-                )
-            )
-
-
-        return assignments
+        return task
 
 
 
@@ -87,16 +90,14 @@ class GenesisTaskRouter:
 
         return {
 
-            "system": self.system,
+            "system":
+                self.name,
 
             "tasks":
-            len(self.tasks),
-
-            "assignments":
-            self.tasks,
+                len(self.tasks),
 
             "timestamp":
-            time.time()
+                time.time()
 
         }
 

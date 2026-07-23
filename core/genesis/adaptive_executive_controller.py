@@ -13,15 +13,21 @@ from core.genesis.memory.business_cycle_memory_bridge import (
     business_cycle_memory_bridge
 )
 
+from core.genesis.genesis_adaptive_ceo_learning_bridge import (
+    genesis_adaptive_ceo_learning_bridge
+)
+
 
 class GenesisAdaptiveExecutiveController:
 
     def __init__(self):
 
-        self.system = "GENESIS ADAPTIVE EXECUTIVE CONTROLLER v1"
+        self.system = (
+            "GENESIS ADAPTIVE EXECUTIVE CONTROLLER v2 "
+            "WITH CEO LEARNING"
+        )
 
         self.cycles = []
-
 
 
     def evaluate_objective(
@@ -34,13 +40,31 @@ class GenesisAdaptiveExecutiveController:
         )
 
 
-        intelligence = mission_optimizer.optimize(
-            objective
+        intelligence = (
+            mission_optimizer.optimize(
+                objective
+            )
         )
 
 
-        mission = executive_mission_orchestrator.create_mission(
-            objective
+        learning = (
+            genesis_adaptive_ceo_learning_bridge
+            .advise_future_mission(
+                objective
+            )
+        )
+
+
+        print(
+            "🧠 CEO learning applied"
+        )
+
+
+        mission = (
+            executive_mission_orchestrator
+            .create_mission(
+                objective
+            )
         )
 
 
@@ -49,8 +73,12 @@ class GenesisAdaptiveExecutiveController:
             "intelligence":
                 intelligence,
 
+            "ceo_learning":
+                learning,
+
             "mission":
                 mission
+
         }
 
 
@@ -64,7 +92,8 @@ class GenesisAdaptiveExecutiveController:
         cycle = {
 
             "id":
-                "adaptive_cycle_" +
+                "adaptive_cycle_"
+                +
                 uuid.uuid4().hex[:8],
 
             "objective":
@@ -78,6 +107,7 @@ class GenesisAdaptiveExecutiveController:
 
             "timestamp":
                 time.time()
+
         }
 
 
@@ -105,14 +135,18 @@ class GenesisAdaptiveExecutiveController:
         objective
     ):
 
-        intelligence = self.evaluate_objective(
-            objective
+        intelligence = (
+            self.evaluate_objective(
+                objective
+            )
         )
 
 
-        cycle = self.complete_cycle(
-            objective,
-            intelligence
+        cycle = (
+            self.complete_cycle(
+                objective,
+                intelligence
+            )
         )
 
 
@@ -128,12 +162,20 @@ class GenesisAdaptiveExecutiveController:
                 self.system,
 
             "cycles":
-                len(self.cycles),
+                len(
+                    self.cycles
+                ),
+
+            "status":
+                "ONLINE",
 
             "timestamp":
                 time.time()
+
         }
 
 
 
-adaptive_executive_controller = GenesisAdaptiveExecutiveController()
+adaptive_executive_controller = (
+    GenesisAdaptiveExecutiveController()
+)

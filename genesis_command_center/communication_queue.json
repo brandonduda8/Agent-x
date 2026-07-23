@@ -1,0 +1,32 @@
+{
+    "notifications": [
+        {
+            "type": "NOTIFICATION",
+            "title": "Genesis Online",
+            "message": "All core systems connected",
+            "priority": "HIGH",
+            "timestamp": "2026-07-23 15:00:18.608114"
+        }
+    ],
+    "approvals": [
+        {
+            "type": "APPROVAL_REQUIRED",
+            "action": "Launch outreach campaign",
+            "reason": "Potential revenue opportunity identified",
+            "status": "WAITING",
+            "timestamp": "2026-07-23 15:00:18.608559"
+        }
+    ],
+    "daily_briefs": [
+        {
+            "type": "DAILY_POWER_BRIEF",
+            "focus": "Business Development",
+            "actions": [
+                "Review new leads",
+                "Send approved outreach",
+                "Update pipeline"
+            ],
+            "timestamp": "2026-07-23 15:00:18.608839"
+        }
+    ]
+}

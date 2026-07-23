@@ -1,0 +1,12 @@
+{
+  "genesis_revenue_agent": {
+    "capabilities": [
+      "sales",
+      "lead_generation",
+      "revenue_strategy"
+    ],
+    "model": "deepseek/deepseek-chat-v3-0324",
+    "registered": "2026-07-21T21:23:33.789117",
+    "status": "ONLINE"
+  }
+}

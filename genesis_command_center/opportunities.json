@@ -1,0 +1,36 @@
+[
+    {
+        "id": 1,
+        "category": "business",
+        "title": "Example Opportunity",
+        "description": "Potential income or business opportunity",
+        "priority": "HIGH",
+        "status": "NEW",
+        "next_action": "Review and decide",
+        "created": "2026-07-23 16:04:39.830751"
+    },
+    {
+        "id": 2,
+        "category": "income",
+        "title": "High probability employment opportunity",
+        "description": "Potential job match requiring review",
+        "source_agent": "Opportunity Discovery Agent",
+        "priority": "HIGH",
+        "status": "NEW",
+        "approval_required": true,
+        "next_action": "Review by operator",
+        "created": "2026-07-23 16:08:03.084982"
+    },
+    {
+        "id": 3,
+        "category": "business",
+        "title": "Potential client opportunity",
+        "description": "Business outreach candidate requiring approval",
+        "source_agent": "Revenue Agent",
+        "priority": "HIGH",
+        "status": "NEW",
+        "approval_required": true,
+        "next_action": "Review by operator",
+        "created": "2026-07-23 16:08:03.085015"
+    }
+]

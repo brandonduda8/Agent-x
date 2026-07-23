@@ -2,15 +2,57 @@ import time
 import uuid
 
 
+from core.genesis.agent_registry import agent_registry
+
+
+
 class GenesisAgentMatchingEngine:
+    """
+    GENESIS AGENT MATCHING ENGINE v4
+
+    Persistent workforce intelligence.
+
+    Automatically loads agents from:
+    Genesis Persistent Agent Registry
+
+    Flow:
+
+    Agent Registry
+          |
+          v
+    Matching Engine
+          |
+          v
+    Mission Teams
+    """
+
+
 
     def __init__(self):
 
-        self.system = "GENESIS AGENT MATCHING ENGINE v1"
+        self.system = (
+            "GENESIS AGENT MATCHING ENGINE v4"
+        )
 
         self.agents = {}
 
         self.matches = []
+
+        self.load_agents()
+
+
+
+    def load_agents(self):
+
+        for name, agent in agent_registry.agents.items():
+
+            self.register_agent(
+                name,
+                agent.get(
+                    "skills",
+                    []
+                )
+            )
 
 
 
@@ -20,24 +62,23 @@ class GenesisAgentMatchingEngine:
         skills
     ):
 
+
         agent = {
 
             "id":
-                "agent_"
-                +
-                uuid.uuid4().hex[:8],
+            "agent_" + uuid.uuid4().hex[:8],
 
             "name":
-                name,
+            name,
 
             "skills":
-                skills,
+            skills,
 
             "status":
-                "AVAILABLE",
+            "AVAILABLE",
 
             "registered":
-                time.time()
+            time.time()
 
         }
 
@@ -46,7 +87,7 @@ class GenesisAgentMatchingEngine:
 
 
         print(
-            f"🤖 Agent added to matcher: {name}"
+            f"🤖 Agent registered: {name}"
         )
 
 
@@ -59,6 +100,7 @@ class GenesisAgentMatchingEngine:
         mission
     ):
 
+
         required = mission.get(
             "required_capabilities",
             []
@@ -67,70 +109,76 @@ class GenesisAgentMatchingEngine:
 
         selected = []
 
-
         scores = {}
+
 
 
         for name, agent in self.agents.items():
 
-            score = 0
+            matched = [
+
+                skill
+
+                for skill in agent["skills"]
+
+                if skill in required
+
+            ]
 
 
-            for skill in agent["skills"]:
-
-                if skill in required:
-
-                    score += 1
+            score = len(matched)
 
 
             if score > 0:
 
                 scores[name] = score
 
-                selected.append(
-                    {
-                        "agent": name,
-                        "score": score,
-                        "matched_skills":
-                            [
-                                s for s in agent["skills"]
-                                if s in required
-                            ]
-                    }
-                )
+
+                selected.append({
+
+                    "agent":
+                    name,
+
+                    "score":
+                    score,
+
+                    "matched_skills":
+                    matched
+
+                })
 
 
 
         result = {
 
             "id":
-                "match_"
-                +
-                uuid.uuid4().hex[:8],
+            "match_" + uuid.uuid4().hex[:8],
 
             "mission":
-                mission["id"],
+            mission.get("id"),
 
             "team":
-                selected,
+            selected,
 
             "scores":
-                scores,
+            scores,
 
             "status":
-                "READY",
+            "READY",
 
             "timestamp":
-                time.time()
+            time.time()
 
         }
 
 
-        self.matches.append(result)
+        self.matches.append(
+            result
+        )
 
 
         print(
-            "🧬 Agent team selected"
+            "🧬 Dynamic agent team selected"
         )
 
 
@@ -143,16 +191,16 @@ class GenesisAgentMatchingEngine:
         return {
 
             "system":
-                self.system,
+            self.system,
 
             "agents":
-                len(self.agents),
+            len(self.agents),
 
             "matches":
-                len(self.matches),
+            len(self.matches),
 
             "timestamp":
-                time.time()
+            time.time()
 
         }
 

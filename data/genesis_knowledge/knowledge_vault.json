@@ -1,0 +1,18 @@
+[
+  {
+    "id": "knowledge_a4a0a6f7",
+    "source_type": "engineering",
+    "title": "AI Automation Principles",
+    "content": "Workflow automation, agents, APIs, and business systems.",
+    "timestamp": 1784685487.6958709,
+    "status": "AVAILABLE"
+  },
+  {
+    "id": "knowledge_e433e1aa",
+    "source_type": "computer_science",
+    "title": "Software Architecture",
+    "content": "Modular systems, testing, deployment, and scalable design.",
+    "timestamp": 1784685487.6963534,
+    "status": "AVAILABLE"
+  }
+]

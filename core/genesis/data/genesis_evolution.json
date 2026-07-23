@@ -1,0 +1,40 @@
+{
+  "evolutions": [
+    {
+      "id": "upgrade_d272f192",
+      "agent": "Genesis Market Research Agent",
+      "reason": "Improve SMB revenue opportunity discovery",
+      "recommended_changes": [
+        "Improve reasoning prompts",
+        "Add specialized knowledge",
+        "Increase task evaluation accuracy",
+        "Connect additional tools"
+      ],
+      "timestamp": 1784572750.626696
+    },
+    {
+      "id": "upgrade_60860a46",
+      "agent": "Genesis Market Research Agent",
+      "reason": "Improve revenue execution performance",
+      "recommended_changes": [
+        "Improve reasoning prompts",
+        "Add specialized knowledge",
+        "Increase task evaluation accuracy",
+        "Connect additional tools"
+      ],
+      "timestamp": 1784574139.1996825
+    },
+    {
+      "id": "upgrade_f437cc9e",
+      "agent": "Genesis Outreach Agent",
+      "reason": "Improve revenue execution performance",
+      "recommended_changes": [
+        "Improve reasoning prompts",
+        "Add specialized knowledge",
+        "Increase task evaluation accuracy",
+        "Connect additional tools"
+      ],
+      "timestamp": 1784574139.200894
+    }
+  ]
+}

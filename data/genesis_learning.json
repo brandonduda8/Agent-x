@@ -15,7 +15,84 @@
   ],
   "lessons": [
     "Use Genesis workspace manager instead of system directories.",
-    "Use Genesis workspace manager instead of system directories."
+    "Use Genesis workspace manager instead of system directories.",
+    {
+      "id": "lesson_eb9061f5",
+      "mission": "test",
+      "objective": "Find AI automation clients",
+      "success_score": 100,
+      "agents": [
+        "Research Agent",
+        "Revenue Agent"
+      ],
+      "capabilities": [
+        "market_research",
+        "outreach"
+      ],
+      "timestamp": 1784503573.5936005
+    },
+    {
+      "id": "lesson_797d3863",
+      "mission": "decision_1784503682",
+      "objective": "Find AI automation clients needing workflow solutions",
+      "success_score": 100,
+      "agents": [
+        "Research Agent",
+        "Revenue Agent",
+        "Automation Agent",
+        "Sales Agent"
+      ],
+      "capabilities": [
+        "outreach",
+        "offer_creation",
+        "lead_generation",
+        "workflow_automation",
+        "market_research",
+        "sales_pipeline"
+      ],
+      "timestamp": 1784503682.8889906
+    },
+    {
+      "id": "lesson_2555bcde",
+      "mission": null,
+      "objective": "Find and apply for suitable remote jobs",
+      "success_score": 100,
+      "agents": [],
+      "capabilities": [],
+      "timestamp": 1784507380.6689332
+    },
+    {
+      "id": "lesson_d7cdef12",
+      "mission": null,
+      "objective": "Find and apply for suitable remote jobs",
+      "success_score": 100,
+      "agents": [],
+      "capabilities": [],
+      "timestamp": 1784507493.022881
+    },
+    {
+      "id": "lesson_9a2f44ea",
+      "mission": "career_970e997a",
+      "objective": "Find and apply for suitable remote jobs",
+      "success_score": 100,
+      "agents": [],
+      "capabilities": [],
+      "timestamp": 1784507579.5441687
+    }
   ],
-  "improvements": []
+  "improvements": [],
+  "agent_scores": {
+    "Research Agent": 200,
+    "Revenue Agent": 200,
+    "Automation Agent": 100,
+    "Sales Agent": 100
+  },
+  "capability_scores": {
+    "market_research": 200,
+    "outreach": 200,
+    "offer_creation": 100,
+    "lead_generation": 100,
+    "workflow_automation": 100,
+    "sales_pipeline": 100
+  }
 }

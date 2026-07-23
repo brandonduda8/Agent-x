@@ -5,6 +5,7 @@ from core.genesis.telegram.telegram_daemon import telegram_daemon
 from core.genesis.runtime.genesis_runtime import genesis_runtime
 from core.genesis.runtime.scheduler import scheduler
 from core.genesis.agent_heartbeat_system import agent_heartbeat_system
+from core.genesis.autonomous_operation_loop import autonomous_operation_loop
 
 
 class GenesisSupervisor:
@@ -14,7 +15,6 @@ class GenesisSupervisor:
         self.system = "GENESIS AUTONOMOUS SUPERVISOR v1"
 
         self.running = False
-
         self.cycles = 0
 
 
@@ -51,6 +51,7 @@ class GenesisSupervisor:
 
             genesis_runtime.cycle()
 
+
             agent_heartbeat_system.heartbeat(
                 "Genesis Core",
                 "Maintain autonomous system",
@@ -59,11 +60,25 @@ class GenesisSupervisor:
 
 
             try:
+
                 scheduler.run_once()
 
             except Exception as e:
+
                 print(
                     "Scheduler error:",
+                    e
+                )
+
+
+            try:
+
+                autonomous_operation_loop.cycle()
+
+            except Exception as e:
+
+                print(
+                    "Autonomous loop error:",
                     e
                 )
 
@@ -71,6 +86,7 @@ class GenesisSupervisor:
             print(
                 f"🧬 Genesis heartbeat #{self.cycles}"
             )
+
 
             time.sleep(30)
 
@@ -90,7 +106,6 @@ class GenesisSupervisor:
                     "Telegram error:",
                     e
                 )
-
 
             time.sleep(3)
 
@@ -152,14 +167,16 @@ class GenesisSupervisor:
                 genesis_runtime.status(),
 
             "agents":
-                agent_heartbeat_system.workforce_status()
+                agent_heartbeat_system.workforce_status(),
+
+            "operations":
+                autonomous_operation_loop.status()
 
         }
 
 
 
 genesis_supervisor = GenesisSupervisor()
-
 
 
 if __name__ == "__main__":

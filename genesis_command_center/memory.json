@@ -1,0 +1,96 @@
+{
+    "operator": {
+        "mission": "upgrade life through income, stability, technology growth",
+        "location": "Lisle, Illinois"
+    },
+    "agents": {
+        "Opportunity Discovery Agent": {
+            "category": "income",
+            "status": "ONLINE",
+            "connected": true
+        },
+        "Revenue Agent": {
+            "category": "revenue",
+            "status": "ONLINE",
+            "connected": true
+        },
+        "Stability Agent": {
+            "category": "housing",
+            "status": "ONLINE",
+            "connected": true
+        }
+    },
+    "missions": [
+        {
+            "agent": "Opportunity Discovery Agent",
+            "objective": "Find income opportunities",
+            "status": "DISPATCHED",
+            "created": "2026-07-23 14:29:36.524963"
+        },
+        {
+            "agent": "Revenue Agent",
+            "objective": "Find business leads",
+            "status": "DISPATCHED",
+            "created": "2026-07-23 14:29:36.525258"
+        },
+        {
+            "agent": "Stability Agent",
+            "objective": "Find housing resources",
+            "status": "DISPATCHED",
+            "created": "2026-07-23 14:29:36.525556"
+        },
+        {
+            "agent": "Genesis Core",
+            "mission": "Coordinate all connected agents",
+            "created": "2026-07-23 14:54:26.591641",
+            "status": "DISPATCHED"
+        },
+        {
+            "agent": "Genesis Core",
+            "objective": "Coordinate all connected agents",
+            "status": "DISPATCHED",
+            "timestamp": "2026-07-23 15:07:41.209018"
+        }
+    ],
+    "results": [
+        {
+            "agent": "Genesis Core",
+            "result": "Memory system online",
+            "timestamp": "2026-07-23 14:29:36.525848"
+        }
+    ],
+    "decisions": [],
+    "events": [
+        {
+            "agent": "Genesis Core",
+            "action": "Unified command bus online",
+            "timestamp": "2026-07-23 14:34:06.178519",
+            "status": "EXECUTED"
+        },
+        {
+            "agent": "Opportunity Discovery Agent",
+            "action": "Search and prioritize income opportunities",
+            "timestamp": "2026-07-23 14:35:17.452550",
+            "status": "EXECUTED"
+        },
+        {
+            "agent": "Revenue Agent",
+            "action": "Prepare outreach pipeline",
+            "timestamp": "2026-07-23 14:35:17.453204",
+            "status": "EXECUTED"
+        },
+        {
+            "agent": "Stability Agent",
+            "action": "Update stability resources",
+            "timestamp": "2026-07-23 14:35:17.453804",
+            "status": "EXECUTED"
+        },
+        {
+            "agent": "Genesis Core",
+            "action": "Unified command bus online",
+            "payload": null,
+            "timestamp": "2026-07-23 14:54:26.590210",
+            "status": "EXECUTED"
+        }
+    ]
+}

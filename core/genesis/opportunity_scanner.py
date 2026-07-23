@@ -1,99 +1,239 @@
 import time
+import uuid
 
 
 class GenesisOpportunityScanner:
+    """
+    GENESIS OPPORTUNITY SCANNER v1
+
+    Finds and ranks opportunities based on:
+
+    - skill match
+    - revenue potential
+    - completion probability
+    - Genesis capability
+    """
 
     def __init__(self):
 
         self.system = "GENESIS OPPORTUNITY SCANNER v1"
 
-        self.scans = []
+        self.opportunities = []
 
 
-    def scan(self, objective):
+    def add_opportunity(
+        self,
+        title,
+        source,
+        category,
+        value,
+        skills,
+        description=""
+    ):
 
-        print(
-            "🔎 Scanning opportunities:",
-            objective
-        )
+        opportunity = {
 
+            "id":
+                "opp_" + uuid.uuid4().hex[:8],
 
-        opportunities = [
+            "title":
+                title,
 
-            {
-                "name":
-                "AI automation service for small businesses",
+            "source":
+                source,
 
-                "type":
-                "service",
+            "category":
+                category,
 
-                "estimated_value":
-                "$500-$3000",
+            "estimated_value":
+                value,
 
-                "difficulty":
-                "medium",
+            "skills":
+                skills,
 
-                "action":
-                "Create outreach campaign"
-            },
+            "description":
+                description,
 
+            "status":
+                "NEW",
 
-            {
-                "name":
-                "AI Sales Assistant SaaS",
-
-                "type":
-                "software",
-
-                "estimated_value":
-                "$29-$299/month",
-
-                "difficulty":
-                "medium",
-
-                "action":
-                "Launch landing page and outreach"
-            },
-
-
-            {
-                "name":
-                "AI workflow consulting",
-
-                "type":
-                "consulting",
-
-                "estimated_value":
-                "$1000+",
-
-                "difficulty":
-                "medium",
-
-                "action":
-                "Create offer and contact businesses"
-            }
-
-        ]
-
-
-        result = {
-
-            "objective":
-            objective,
-
-            "opportunities":
-            opportunities,
-
-            "timestamp":
-            time.time()
+            "created":
+                time.time()
 
         }
 
 
-        self.scans.append(result)
+        self.opportunities.append(
+            opportunity
+        )
 
 
-        return result
+        print(
+            f"🎯 Opportunity Added: {title}"
+        )
+
+
+        return opportunity
+
+
+
+    def scan(
+        self,
+        profile
+    ):
+
+        print(
+            "🔎 Genesis scanning opportunities..."
+        )
+
+
+        results = []
+
+
+        profile_skills = [
+            skill.lower()
+            for skill in profile.get(
+                "skills",
+                []
+            )
+        ]
+
+
+        for opportunity in self.opportunities:
+
+            job_skills = [
+
+                skill.lower()
+
+                for skill in opportunity.get(
+                    "skills",
+                    []
+                )
+
+            ]
+
+
+            matched = []
+
+            missing = []
+
+
+            for skill in job_skills:
+
+                if skill in profile_skills:
+
+                    matched.append(
+                        skill
+                    )
+
+                else:
+
+                    missing.append(
+                        skill
+                    )
+
+
+            if job_skills:
+
+                match_score = int(
+                    (
+                        len(matched)
+                        /
+                        len(job_skills)
+                    )
+                    * 100
+                )
+
+            else:
+
+                match_score = 0
+
+
+
+            revenue_score = min(
+                int(
+                    opportunity.get(
+                        "estimated_value",
+                        0
+                    )
+                    /
+                    100
+                ),
+                100
+            )
+
+
+            total_score = int(
+                (
+                    match_score * .7
+                )
+                +
+                (
+                    revenue_score * .3
+                )
+            )
+
+
+            if total_score >= 80:
+
+                recommendation = "APPLY_NOW"
+
+            elif total_score >= 50:
+
+                recommendation = "REVIEW"
+
+            else:
+
+                recommendation = "LOW_PRIORITY"
+
+
+
+            result = {
+
+                "id":
+                    "scan_" + uuid.uuid4().hex[:8],
+
+                "opportunity":
+                    opportunity["title"],
+
+                "source":
+                    opportunity["source"],
+
+                "match_score":
+                    match_score,
+
+                "revenue_score":
+                    revenue_score,
+
+                "total_score":
+                    total_score,
+
+                "matched_skills":
+                    matched,
+
+                "missing_skills":
+                    missing,
+
+                "recommendation":
+                    recommendation,
+
+                "timestamp":
+                    time.time()
+
+            }
+
+
+            print(
+                f"🧠 Opportunity Score: {total_score}% - {recommendation}"
+            )
+
+
+            results.append(
+                result
+            )
+
+
+        return results
 
 
 
@@ -102,13 +242,15 @@ class GenesisOpportunityScanner:
         return {
 
             "system":
-            self.system,
+                self.system,
 
-            "scans":
-            len(self.scans),
+            "opportunities":
+                len(
+                    self.opportunities
+                ),
 
             "timestamp":
-            time.time()
+                time.time()
 
         }
 

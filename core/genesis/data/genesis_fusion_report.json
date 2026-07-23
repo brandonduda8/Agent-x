@@ -1,0 +1,666 @@
+{
+  "system": "GENESIS FUSION CONTROLLER v1",
+  "timestamp": 1784591153.8944848,
+  "agents": [
+    {
+      "name": "GenesisAgentManager",
+      "file": "core/genesis/agent_manager.py"
+    },
+    {
+      "name": "GenesisAgentXBridge",
+      "file": "core/genesis/agent_x_bridge.py"
+    },
+    {
+      "name": "GenesisHardwareAgent",
+      "file": "core/genesis/hardware_agent.py"
+    },
+    {
+      "name": "GenesisAgentFactory",
+      "file": "core/genesis/agent_factory.py"
+    },
+    {
+      "name": "GenesisSalesAgent",
+      "file": "core/genesis/sales_agent.py"
+    },
+    {
+      "name": "GenesisAgentRegistry",
+      "file": "core/genesis/agent_registry.py"
+    },
+    {
+      "name": "GenesisMobileAgent",
+      "file": "core/genesis/mobile_agent.py"
+    },
+    {
+      "name": "GenesisTelegramAgent",
+      "file": "core/genesis/telegram_agent.py"
+    },
+    {
+      "name": "GenesisAgentIntelligenceManager",
+      "file": "core/genesis/agent_intelligence_manager.py"
+    },
+    {
+      "name": "MobileBuildAgent",
+      "file": "core/genesis/mobile_build_agent.py"
+    },
+    {
+      "name": "GenesisAgentMatchingEngine",
+      "file": "core/genesis/agent_matching_engine.py"
+    },
+    {
+      "name": "GenesisAgentEvolutionEngine",
+      "file": "core/genesis/agent_evolution_engine.py"
+    },
+    {
+      "name": "GenesisAutonomousAgentFactory",
+      "file": "core/genesis/autonomous_agent_factory.py"
+    },
+    {
+      "name": "GenesisEnterpriseGrowthMarketingAgent",
+      "file": "core/genesis/enterprise_growth_marketing_agent.py"
+    },
+    {
+      "name": "GenesisEnterpriseSDKAgent",
+      "file": "core/genesis/enterprise_sdk_agent.py"
+    },
+    {
+      "name": "GenesisCRMAgent",
+      "file": "core/genesis/crm_agent.py"
+    },
+    {
+      "name": "GenesisAgentHeartbeatSystem",
+      "file": "core/genesis/agent_heartbeat_system.py"
+    },
+    {
+      "name": "GenesisApplicationAgent",
+      "file": "core/genesis/application_agent.py"
+    },
+    {
+      "name": "AgentDeploymentEngine",
+      "file": "core/genesis/agent_deployment_engine.py"
+    },
+    {
+      "name": "SmartAgentExecutor",
+      "file": "core/genesis/smart_agent_executor.py"
+    },
+    {
+      "name": "GenesisMasterEngineerAgent",
+      "file": "core/genesis/master_engineer_agent.py"
+    },
+    {
+      "name": "GenesisLeadAcquisitionAgent",
+      "file": "core/genesis/lead_acquisition_agent.py"
+    },
+    {
+      "name": "GenesisOutreachExecutionAgent",
+      "file": "core/genesis/outreach_execution_agent.py"
+    },
+    {
+      "name": "GenesisExecutiveSDKAgent",
+      "file": "core/genesis/executive_sdk_agent.py"
+    },
+    {
+      "name": "GenesisSalesPartnerAgent",
+      "file": "core/genesis/sales_partner_agent.py"
+    },
+    {
+      "name": "GenesisOfferGenerationAgent",
+      "file": "core/genesis/offer_generation_agent.py"
+    },
+    {
+      "name": "GenesisActionAgent",
+      "file": "core/genesis/genesis_action_agent.py"
+    },
+    {
+      "name": "GenesisAgentWorkerRuntime",
+      "file": "core/genesis/agent_worker_runtime.py"
+    },
+    {
+      "name": "GenesisAgentFactory",
+      "file": "core/genesis/genesis_agent_factory.py"
+    },
+    {
+      "name": "GenesisAgentMemory",
+      "file": "core/genesis/runtime/agent_memory.py"
+    },
+    {
+      "name": "GenesisAgentExecutor",
+      "file": "core/genesis/runtime/agent_executor.py"
+    },
+    {
+      "name": "GenesisAgentRuntime",
+      "file": "core/genesis/runtime/agent_runtime.py"
+    },
+    {
+      "name": "GenesisAgentHealthMonitor",
+      "file": "core/genesis/operations/agent_health_monitor.py"
+    },
+    {
+      "name": "GenesisAgentEvolutionTrigger",
+      "file": "core/genesis/operations/agent_evolution_trigger.py"
+    },
+    {
+      "name": "GenesisAgentGenome",
+      "file": "core/genesis/evolution/agent_genome.py"
+    },
+    {
+      "name": "GenesisAgentVersionManager",
+      "file": "core/genesis/evolution/agent_version_manager.py"
+    },
+    {
+      "name": "GenesisAgentEvolutionEngine",
+      "file": "core/genesis/evolution/agent_evolution_engine.py"
+    },
+    {
+      "name": "ExperimentAgent",
+      "file": "core/genesis/meta/experiment_agent.py"
+    },
+    {
+      "name": "AgentFactory",
+      "file": "core/genesis/meta/agent_factory.py"
+    },
+    {
+      "name": "GenesisAgentTrainingEngine",
+      "file": "core/genesis/cognitive/agent_training_engine.py"
+    },
+    {
+      "name": "CEOAgent",
+      "file": "core/genesis/executive/ceo_agent.py"
+    },
+    {
+      "name": "CFOAgent",
+      "file": "core/genesis/executive/cfo_agent.py"
+    },
+    {
+      "name": "CTOAgent",
+      "file": "core/genesis/executive/cto_agent.py"
+    },
+    {
+      "name": "COOAgent",
+      "file": "core/genesis/executive/coo_agent.py"
+    },
+    {
+      "name": "CROAgent",
+      "file": "core/genesis/executive/cro_agent.py"
+    },
+    {
+      "name": "ProspectingAgent",
+      "file": "core/genesis/sales_force/prospecting_agent.py"
+    },
+    {
+      "name": "ResearchAgent",
+      "file": "core/genesis/sales_force/research_agent.py"
+    },
+    {
+      "name": "OutreachAgent",
+      "file": "core/genesis/sales_force/outreach_agent.py"
+    },
+    {
+      "name": "AppointmentAgent",
+      "file": "core/genesis/sales_force/appointment_agent.py"
+    },
+    {
+      "name": "CloserAgent",
+      "file": "core/genesis/sales_force/closer_agent.py"
+    },
+    {
+      "name": "GenesisAgentMemory",
+      "file": "core/genesis/memory/agent_memory.py"
+    },
+    {
+      "name": "AgentSpecializationFactory",
+      "file": "core/genesis/swarm/agent_specialization_factory.py"
+    },
+    {
+      "name": "GenesisAgentSelector",
+      "file": "core/genesis/autonomy/agent_selector.py"
+    },
+    {
+      "name": "GenesisAgentRegistry",
+      "file": "core/genesis/workforce/agent_registry.py"
+    },
+    {
+      "name": "AgentAllocator",
+      "file": "core/genesis/capital_allocation/agent_allocator.py"
+    }
+  ],
+  "engines": [
+    {
+      "name": "GenesisExecutionEngine",
+      "file": "core/genesis/execution_engine.py"
+    },
+    {
+      "name": "GenesisRecoveryEngine",
+      "file": "core/genesis/recovery_engine.py"
+    },
+    {
+      "name": "GenesisLearningEngine",
+      "file": "core/genesis/learning_engine.py"
+    },
+    {
+      "name": "GenesisCEODecisionEngine",
+      "file": "core/genesis/ceo_decision_engine.py"
+    },
+    {
+      "name": "GenesisCheckoutEngine",
+      "file": "core/genesis/checkout_engine.py"
+    },
+    {
+      "name": "GenesisMarketingEngine",
+      "file": "core/genesis/marketing_engine.py"
+    },
+    {
+      "name": "GenesisOutreachEngine",
+      "file": "core/genesis/outreach_engine.py"
+    },
+    {
+      "name": "GenesisRevenueDecisionEngine",
+      "file": "core/genesis/revenue_decision_engine.py"
+    },
+    {
+      "name": "GenesisKnowledgeEngine",
+      "file": "core/genesis/knowledge_engine.py"
+    },
+    {
+      "name": "GenesisCodeGenerationEngine",
+      "file": "core/genesis/code_generation_engine.py"
+    },
+    {
+      "name": "GenesisAppAssemblyEngine",
+      "file": "core/genesis/app_assembly_engine.py"
+    },
+    {
+      "name": "GenesisBusinessAutomationEngine",
+      "file": "core/genesis/business_automation_engine.py"
+    },
+    {
+      "name": "GenesisTaskExecutionEngine",
+      "file": "core/genesis/task_execution_engine.py"
+    },
+    {
+      "name": "GenesisCEODailyOperationsEngine",
+      "file": "core/genesis/ceo_daily_operations_engine.py"
+    },
+    {
+      "name": "GenesisWorkforceSyncEngine",
+      "file": "core/genesis/workforce_sync_engine.py"
+    },
+    {
+      "name": "GenesisRevenueAcquisitionEngine",
+      "file": "core/genesis/revenue_acquisition_engine.py"
+    },
+    {
+      "name": "GenesisSalesIntelligenceEngine",
+      "file": "core/genesis/sales_intelligence_engine.py"
+    },
+    {
+      "name": "GenesisCRMRevenuePipelineEngine",
+      "file": "core/genesis/crm_revenue_pipeline_engine.py"
+    },
+    {
+      "name": "GenesisRevenueExecutionEngineV2",
+      "file": "core/genesis/revenue_execution_engine_v2.py"
+    },
+    {
+      "name": "GenesisMissionOutcomeEngine",
+      "file": "core/genesis/mission_outcome_engine.py"
+    },
+    {
+      "name": "GenesisRevenueIntelligenceEngine",
+      "file": "core/genesis/revenue_intelligence_engine.py"
+    },
+    {
+      "name": "GenesisRevenueMissionEngine",
+      "file": "core/genesis/revenue_mission_engine.py"
+    },
+    {
+      "name": "GenesisSalesConversionEngine",
+      "file": "core/genesis/sales_conversion_engine.py"
+    },
+    {
+      "name": "GenesisSkillMatchEngine",
+      "file": "core/genesis/skill_match_engine.py"
+    },
+    {
+      "name": "GenesisOpportunityAcquisitionEngine",
+      "file": "core/genesis/opportunity_acquisition_engine.py"
+    },
+    {
+      "name": "GenesisIncomeExecutionEngine",
+      "file": "core/genesis/income_execution_engine.py"
+    },
+    {
+      "name": "GenesisAndroidSkillEngine",
+      "file": "core/genesis/android_skill_engine.py"
+    },
+    {
+      "name": "GenesisAutomationMemoryEngine",
+      "file": "core/genesis/automation_memory_engine.py"
+    },
+    {
+      "name": "GenesisLeadGenerationEngine",
+      "file": "core/genesis/lead_generation_engine.py"
+    },
+    {
+      "name": "GenesisRevenueExecutionEngine",
+      "file": "core/genesis/revenue_execution_engine.py"
+    },
+    {
+      "name": "GenesisSelfImprovementEngine",
+      "file": "core/genesis/self_improvement_engine.py"
+    },
+    {
+      "name": "GenesisMarketIntelligenceEngine",
+      "file": "core/genesis/market_intelligence_engine.py"
+    },
+    {
+      "name": "GenesisMissionLearningEngine",
+      "file": "core/genesis/mission_learning_engine.py"
+    },
+    {
+      "name": "GenesisOutreachCampaignEngine",
+      "file": "core/genesis/outreach_campaign_engine.py"
+    },
+    {
+      "name": "GenesisOpportunityIntelligenceEngine",
+      "file": "core/genesis/opportunity_intelligence_engine.py"
+    },
+    {
+      "name": "GenesisJobHunterEngine",
+      "file": "core/genesis/job_hunter_engine.py"
+    },
+    {
+      "name": "GenesisMissionExecutionEngine",
+      "file": "core/genesis/mission_execution_engine.py"
+    },
+    {
+      "name": "GenesisExecutiveReportEngine",
+      "file": "core/genesis/executive_report_engine.py"
+    },
+    {
+      "name": "ClientAcquisitionEngine",
+      "file": "core/genesis/client_acquisition_engine.py"
+    },
+    {
+      "name": "GenesisNotificationEngine",
+      "file": "core/genesis/genesis_notification_engine.py"
+    },
+    {
+      "name": "GenesisApplicationExecutionEngine",
+      "file": "core/genesis/application_execution_engine.py"
+    },
+    {
+      "name": "GenesisSelfAuditingEngineer",
+      "file": "core/genesis/self_auditing_engineer.py"
+    },
+    {
+      "name": "GenesisImprovementEngine",
+      "file": "core/genesis/improvement_engine.py"
+    },
+    {
+      "name": "OpportunityEngine",
+      "file": "core/genesis/opportunity_engine.py"
+    },
+    {
+      "name": "RevenueProductionEngine",
+      "file": "core/genesis/revenue_production_engine.py"
+    },
+    {
+      "name": "GenesisExecutionEngine",
+      "file": "core/genesis/genesis_execution_engine.py"
+    },
+    {
+      "name": "ImprovementExecutionEngine",
+      "file": "core/genesis/improvement_execution_engine.py"
+    },
+    {
+      "name": "GenesisDecisionEngine",
+      "file": "core/genesis/cognitive/decision_engine.py"
+    },
+    {
+      "name": "GenesisEntrepreneurEngine",
+      "file": "core/genesis/entrepreneur/entrepreneur_engine.py"
+    },
+    {
+      "name": "AcquisitionEngine",
+      "file": "core/genesis/capital/acquisition_engine.py"
+    },
+    {
+      "name": "ValuationEngine",
+      "file": "core/genesis/capital/valuation_engine.py"
+    },
+    {
+      "name": "InvestmentEngine",
+      "file": "core/genesis/capital/investment_engine.py"
+    },
+    {
+      "name": "MergerEngine",
+      "file": "core/genesis/capital/merger_engine.py"
+    },
+    {
+      "name": "RevenueConversionEngine",
+      "file": "core/genesis/revenue_conversion/revenue_conversion_engine.py"
+    },
+    {
+      "name": "StrategyEngine",
+      "file": "core/genesis/knowledge_fabric/strategy_engine.py"
+    },
+    {
+      "name": "DecisionEngine",
+      "file": "core/genesis/command_center/decision_engine.py"
+    },
+    {
+      "name": "GenesisSkillTransferEngine",
+      "file": "core/genesis/learning/skill_transfer_engine.py"
+    },
+    {
+      "name": "GenesisMarketSignalEngine",
+      "file": "core/genesis/research/market_signal_engine.py"
+    },
+    {
+      "name": "GenesisOpportunityDiscoveryEngine",
+      "file": "core/genesis/research/opportunity_discovery_engine.py"
+    },
+    {
+      "name": "GenesisOpportunityDecisionEngine",
+      "file": "core/genesis/research/opportunity_decision_engine.py"
+    },
+    {
+      "name": "GenesisBusinessGrowthEngine",
+      "file": "core/genesis/business/business_growth_engine.py"
+    },
+    {
+      "name": "GenesisCustomerEngine",
+      "file": "core/genesis/company/customer_engine.py"
+    },
+    {
+      "name": "GenesisFinanceEngine",
+      "file": "core/genesis/company/finance_engine.py"
+    },
+    {
+      "name": "GenesisPromotionEngine",
+      "file": "core/genesis/workforce/promotion_engine.py"
+    },
+    {
+      "name": "GrowthEngine",
+      "file": "core/genesis/empire/growth_engine.py"
+    },
+    {
+      "name": "GrowthEngine",
+      "file": "core/genesis/holding_company/growth_engine.py"
+    },
+    {
+      "name": "MarketExpansionEngine",
+      "file": "core/genesis/global_expansion/market_expansion_engine.py"
+    },
+    {
+      "name": "ExpansionStrategyEngine",
+      "file": "core/genesis/global_expansion/expansion_strategy_engine.py"
+    },
+    {
+      "name": "CustomerAcquisitionEngine",
+      "file": "core/genesis/revenue/customer_acquisition_engine.py"
+    },
+    {
+      "name": "OfferEngine",
+      "file": "core/genesis/revenue/offer_engine.py"
+    },
+    {
+      "name": "OutreachEngine",
+      "file": "core/genesis/revenue/outreach_engine.py"
+    },
+    {
+      "name": "SalesPipelineEngine",
+      "file": "core/genesis/revenue/sales_pipeline_engine.py"
+    },
+    {
+      "name": "EvidenceEngine",
+      "file": "core/genesis/reality/evidence_engine.py"
+    },
+    {
+      "name": "CustomerAcquisitionEngine",
+      "file": "core/genesis/reality/customer_acquisition.py"
+    },
+    {
+      "name": "RealityExecutionEngine",
+      "file": "core/genesis/reality/reality_engine.py"
+    }
+  ],
+  "controllers": [
+    {
+      "name": "GenesisMasterController",
+      "file": "core/genesis/master_controller.py"
+    },
+    {
+      "name": "GenesisExecutiveController",
+      "file": "core/genesis/executive_controller.py"
+    },
+    {
+      "name": "GenesisMissionController",
+      "file": "core/genesis/mission_controller.py"
+    },
+    {
+      "name": "GenesisMasterIntegrationController",
+      "file": "core/genesis/master_integration_controller.py"
+    },
+    {
+      "name": "GenesisLearningFeedbackController",
+      "file": "core/genesis/learning_feedback_controller.py"
+    },
+    {
+      "name": "GenesisAdaptiveExecutiveController",
+      "file": "core/genesis/adaptive_executive_controller.py"
+    },
+    {
+      "name": "GenesisAutonomousRevenueLoopController",
+      "file": "core/genesis/autonomous_revenue_loop_controller.py"
+    },
+    {
+      "name": "GenesisTelegramController",
+      "file": "core/genesis/genesis_telegram_controller.py"
+    },
+    {
+      "name": "GenesisWorkforceController",
+      "file": "core/genesis/genesis_workforce_controller.py"
+    },
+    {
+      "name": "GenesisLearningController",
+      "file": "core/genesis/genesis_learning_controller.py"
+    },
+    {
+      "name": "GenesisOperationsController",
+      "file": "core/genesis/operations/operations_controller.py"
+    },
+    {
+      "name": "GenesisMetaCEOController",
+      "file": "core/genesis/meta/meta_ceo_controller.py"
+    },
+    {
+      "name": "GenesisRecursiveImprovementController",
+      "file": "core/genesis/meta/recursive_improvement_controller.py"
+    },
+    {
+      "name": "GrowthController",
+      "file": "core/genesis/empire_governor/growth_controller.py"
+    },
+    {
+      "name": "GenesisBusinessFactoryController",
+      "file": "core/genesis/business/business_factory_controller.py"
+    },
+    {
+      "name": "GenesisFinancialController",
+      "file": "core/genesis/company/os/financial_controller.py"
+    },
+    {
+      "name": "GenesisFusionController",
+      "file": "core/genesis/fusion/genesis_fusion_controller.py"
+    }
+  ],
+  "brains": [
+    {
+      "name": "GenesisBrainPlanner",
+      "file": "core/genesis/brain_planner.py"
+    },
+    {
+      "name": "GenesisExecutiveBrain",
+      "file": "core/genesis/executive_brain.py"
+    },
+    {
+      "name": "GenesisBrainRouter",
+      "file": "core/genesis/brain_router.py"
+    },
+    {
+      "name": "GenesisWorkerBrain",
+      "file": "core/genesis/worker_brain.py"
+    },
+    {
+      "name": "GenesisBrainOrchestrator",
+      "file": "core/genesis/meta/genesis_brain_orchestrator.py"
+    },
+    {
+      "name": "EmpireBrain",
+      "file": "core/genesis/empire_governor/empire_brain.py"
+    },
+    {
+      "name": "CreatorBrain",
+      "file": "core/genesis/business_creator/creator_brain.py"
+    },
+    {
+      "name": "KnowledgeBrain",
+      "file": "core/genesis/knowledge_fabric/knowledge_brain.py"
+    },
+    {
+      "name": "CommandBrain",
+      "file": "core/genesis/command_center/command_brain.py"
+    },
+    {
+      "name": "GenesisCompanyBrain",
+      "file": "core/genesis/company/os/company_brain.py"
+    },
+    {
+      "name": "FinancialBrain",
+      "file": "core/genesis/finance/financial_brain.py"
+    },
+    {
+      "name": "InvestmentBrain",
+      "file": "core/genesis/capital_allocation/investment_brain.py"
+    },
+    {
+      "name": "PortfolioBrain",
+      "file": "core/genesis/portfolio_manager/portfolio_brain.py"
+    },
+    {
+      "name": "ImprovementBrain",
+      "file": "core/genesis/self_improvement/improvement_brain.py"
+    }
+  ],
+  "tests": 164,
+  "python_files": 670,
+  "folders": 57,
+  "recommendations": [
+    "Consolidate controller hierarchy",
+    "Create engine capability registry",
+    "Create workforce orchestration layer",
+    "Connect tool registry with real adapters",
+    "Activate runtime kernel governance"
+  ]
+}

@@ -1,0 +1,72 @@
+[
+  {
+    "id": "knowledge_agent_2246e921",
+    "agent": "Genesis AI Engineer Agent",
+    "access": [
+      "stem",
+      "computer_science",
+      "engineering",
+      "mathematics",
+      "artificial_intelligence",
+      "automation"
+    ],
+    "created": 1784685287.1983378,
+    "status": "CONNECTED"
+  },
+  {
+    "id": "knowledge_agent_c76057c0",
+    "agent": "Genesis Software Engineer Agent",
+    "access": [
+      "stem",
+      "computer_science",
+      "engineering",
+      "mathematics",
+      "artificial_intelligence",
+      "automation"
+    ],
+    "created": 1784685287.1988034,
+    "status": "CONNECTED"
+  },
+  {
+    "id": "knowledge_agent_51b1a370",
+    "agent": "Genesis Computer Science Architect Agent",
+    "access": [
+      "stem",
+      "computer_science",
+      "engineering",
+      "mathematics",
+      "artificial_intelligence",
+      "automation"
+    ],
+    "created": 1784685287.199345,
+    "status": "CONNECTED"
+  },
+  {
+    "id": "knowledge_agent_4d6782e3",
+    "agent": "Genesis QA Scientist Agent",
+    "access": [
+      "stem",
+      "computer_science",
+      "engineering",
+      "mathematics",
+      "artificial_intelligence",
+      "automation"
+    ],
+    "created": 1784685287.1998615,
+    "status": "CONNECTED"
+  },
+  {
+    "id": "knowledge_agent_1f1360ee",
+    "agent": "Genesis Knowledge Engineer Agent",
+    "access": [
+      "stem",
+      "computer_science",
+      "engineering",
+      "mathematics",
+      "artificial_intelligence",
+      "automation"
+    ],
+    "created": 1784685287.20041,
+    "status": "CONNECTED"
+  }
+]

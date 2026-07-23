@@ -4,187 +4,159 @@ import uuid
 
 class GenesisRevenueExecutionEngine:
 
-    """
-    GENESIS REVENUE EXECUTION ENGINE v1
+    def __init__(self):
 
-    Connects:
-    - Lead Generation
-    - CRM
-    - Business Automation
-    - Revenue Missions
-    """
+        self.name = "GENESIS REVENUE EXECUTION ENGINE v1"
 
-    def __init__(
-        self,
-        lead_engine=None,
-        crm=None,
-        business_engine=None,
-        event_stream=None
-    ):
-
-        self.system = "GENESIS REVENUE EXECUTION ENGINE v1"
-
-        self.lead_engine = lead_engine
-        self.crm = crm
-        self.business_engine = business_engine
-        self.event_stream = event_stream
-
-        self.missions = []
+        self.executions = []
 
 
-    def create_revenue_mission(
-        self,
-        goal
-    ):
+    def create_execution(self, objective):
 
-        mission = {
+        execution_id = (
+            "revenue_exec_"
+            + uuid.uuid4().hex[:8]
+        )
+
+        tasks = [
+
+            {
+                "id":
+                    "task_" + uuid.uuid4().hex[:8],
+
+                "agent":
+                    "Genesis Market Research Agent",
+
+                "objective":
+                    "Research profitable markets, customers, competitors, and opportunities",
+
+                "status":
+                    "CREATED"
+            },
+
+            {
+                "id":
+                    "task_" + uuid.uuid4().hex[:8],
+
+                "agent":
+                    "Genesis Product Discovery Agent",
+
+                "objective":
+                    "Identify products, services, and monetization opportunities",
+
+                "status":
+                    "CREATED"
+            },
+
+            {
+                "id":
+                    "task_" + uuid.uuid4().hex[:8],
+
+                "agent":
+                    "Genesis Offer Builder Agent",
+
+                "objective":
+                    "Create offers, pricing models, and sales positioning",
+
+                "status":
+                    "CREATED"
+            },
+
+            {
+                "id":
+                    "task_" + uuid.uuid4().hex[:8],
+
+                "agent":
+                    "Genesis Content Marketing Agent",
+
+                "objective":
+                    "Create marketing content, campaigns, and distribution plans",
+
+                "status":
+                    "CREATED"
+            },
+
+            {
+                "id":
+                    "task_" + uuid.uuid4().hex[:8],
+
+                "agent":
+                    "Genesis Outreach Agent",
+
+                "objective":
+                    "Generate lead acquisition and customer outreach workflows",
+
+                "status":
+                    "CREATED"
+            },
+
+            {
+                "id":
+                    "task_" + uuid.uuid4().hex[:8],
+
+                "agent":
+                    "Genesis Analytics Agent",
+
+                "objective":
+                    "Track revenue metrics, conversion, and optimization",
+
+                "status":
+                    "CREATED"
+            }
+
+        ]
+
+
+        execution = {
 
             "id":
-                "revenue_mission_" + uuid.uuid4().hex[:8],
+                execution_id,
 
-            "goal":
-                goal,
+            "objective":
+                objective,
 
-            "stages":[
-
-                {
-                    "name":"Find Leads",
-                    "status":"READY"
-                },
-
-                {
-                    "name":"Qualify Customer",
-                    "status":"READY"
-                },
-
-                {
-                    "name":"Create Offer",
-                    "status":"READY"
-                },
-
-                {
-                    "name":"Close Revenue",
-                    "status":"READY"
-                }
-
-            ],
+            "tasks":
+                tasks,
 
             "status":
-                "CREATED",
+                "READY",
 
             "created":
                 time.time()
-        }
-
-
-        self.missions.append(mission)
-
-
-        if self.event_stream:
-
-            self.event_stream.emit(
-                "REVENUE_MISSION_CREATED",
-                self.system,
-                mission
-            )
-
-
-        return mission
-
-
-
-    def execute_test_pipeline(self):
-
-        lead = self.lead_engine.create_lead(
-
-            company="Local Business",
-
-            industry="Services",
-
-            need="AI automation",
-
-            score=0.90,
-
-            source="Genesis Revenue Engine"
-
-        )
-
-
-        qualified = self.lead_engine.qualify_lead(
-            lead["id"]
-        )
-
-
-        customer = self.crm.create_customer(
-
-            company=qualified["company"],
-
-            industry=qualified["industry"],
-
-            contact="Owner",
-
-            need=qualified["need"],
-
-            lead_score=qualified["score"]
-
-        )
-
-
-        self.crm.update_stage(
-            customer["id"],
-            "QUALIFIED"
-        )
-
-
-        workflow = self.business_engine.create_workflow(
-
-            "AI Automation Service",
-
-            [
-                "Research customer",
-                "Generate offer",
-                "Create outreach",
-                "Track response"
-            ],
-
-            "Genesis Sales Agent"
-
-        )
-
-
-        return {
-
-            "lead":
-                qualified,
-
-            "customer":
-                customer,
-
-            "workflow":
-                workflow,
-
-            "status":
-                "PIPELINE_CREATED"
 
         }
 
 
+        self.executions.append(
+            execution
+        )
 
-    def status(self):
+
+        print(
+            "💰 Genesis Revenue Execution Created:",
+            execution_id
+        )
+
+
+        return execution
+
+
+
+    def get_status(self):
 
         return {
 
             "system":
-                self.system,
+                self.name,
 
-            "missions":
-                len(self.missions),
-
-            "status":
-                "ONLINE",
+            "executions":
+                len(self.executions),
 
             "timestamp":
                 time.time()
+
         }
 
 
+
+revenue_execution_engine = GenesisRevenueExecutionEngine()

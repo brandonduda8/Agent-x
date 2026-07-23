@@ -1,14 +1,74 @@
+import os
+import json
 import time
 import uuid
 
 
 class GenesisToolRegistry:
+    """
+    GENESIS TOOL REGISTRY v2
+
+    Persistent capability storage.
+
+    Stores:
+    - MCP tools
+    - agent tools
+    - automation tools
+    - execution capabilities
+    """
 
     def __init__(self):
 
-        self.system = "GENESIS TOOL REGISTRY v1"
+        self.system = "GENESIS TOOL REGISTRY v2"
+
+        self.file = (
+            "core/genesis/genesis_tool_registry.json"
+        )
 
         self.tools = {}
+
+        self.load()
+
+
+
+    def load(self):
+
+        if os.path.exists(self.file):
+
+            try:
+
+                with open(
+                    self.file,
+                    "r"
+                ) as f:
+
+                    self.tools = json.load(f)
+
+
+            except Exception:
+
+                self.tools = {}
+
+
+
+    def save(self):
+
+        os.makedirs(
+            os.path.dirname(self.file),
+            exist_ok=True
+        )
+
+        with open(
+            self.file,
+            "w"
+        ) as f:
+
+            json.dump(
+                self.tools,
+                f,
+                indent=4
+            )
+
 
 
     def register_tool(
@@ -18,6 +78,7 @@ class GenesisToolRegistry:
         purpose,
         agents
     ):
+
 
         tool = {
 
@@ -51,6 +112,9 @@ class GenesisToolRegistry:
         self.tools[name] = tool
 
 
+        self.save()
+
+
         print(
             f"🔧 Tool registered: {name}"
         )
@@ -60,21 +124,14 @@ class GenesisToolRegistry:
 
 
 
-    def verify_tool(self,name):
+    def verify_tool(
+        self,
+        name
+    ):
 
-        if name in self.tools:
-
-            self.tools[name]["status"] = "VERIFIED"
-            self.tools[name]["health"] = "PASS"
-
-            print(
-                f"✅ Tool verified: {name}"
-            )
-
-            return True
-
-
-        return False
+        return (
+            name in self.tools
+        )
 
 
 

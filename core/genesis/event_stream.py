@@ -6,12 +6,11 @@ class GenesisEventStream:
 
     def __init__(self):
 
-        self.system = "GENESIS EVENT STREAM v1"
+        self.system = "GENESIS EVENT STREAM v2"
 
         self.events = []
 
         self.listeners = []
-
 
 
     def emit(
@@ -49,6 +48,21 @@ class GenesisEventStream:
         )
 
 
+        # Notify connected systems
+        for listener in self.listeners:
+
+            try:
+
+                listener(event)
+
+            except Exception as e:
+
+                print(
+                    "Listener error:",
+                    str(e)
+                )
+
+
         return event
 
 
@@ -63,7 +77,7 @@ class GenesisEventStream:
         return {
 
             "listener":
-            listener,
+            str(listener),
 
             "status":
             "CONNECTED"

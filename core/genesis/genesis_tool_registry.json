@@ -1,0 +1,60 @@
+{
+    "research_adapter": {
+        "id": "tool_90fd2f4b",
+        "name": "research_adapter",
+        "category": "research",
+        "purpose": "MCP capability adapter for research operations",
+        "agents": [
+            "web research",
+            "market analysis",
+            "competitor research"
+        ],
+        "status": "REGISTERED",
+        "health": "UNKNOWN",
+        "created": 1784655450.0174365
+    },
+    "revenue_adapter": {
+        "id": "tool_8551edb3",
+        "name": "revenue_adapter",
+        "category": "revenue",
+        "purpose": "MCP capability adapter for revenue operations",
+        "agents": [
+            "lead generation",
+            "sales",
+            "outreach",
+            "offers"
+        ],
+        "status": "REGISTERED",
+        "health": "UNKNOWN",
+        "created": 1784655450.0179536
+    },
+    "engineering_adapter": {
+        "id": "tool_9b1ef2ad",
+        "name": "engineering_adapter",
+        "category": "engineering",
+        "purpose": "MCP capability adapter for engineering operations",
+        "agents": [
+            "coding",
+            "debugging",
+            "testing",
+            "deployment"
+        ],
+        "status": "REGISTERED",
+        "health": "UNKNOWN",
+        "created": 1784655450.018355
+    },
+    "memory_adapter": {
+        "id": "tool_edb12e2d",
+        "name": "memory_adapter",
+        "category": "memory",
+        "purpose": "MCP capability adapter for memory operations",
+        "agents": [
+            "knowledge storage",
+            "learning",
+            "history"
+        ],
+        "status": "REGISTERED",
+        "health": "UNKNOWN",
+        "created": 1784655450.0187118
+    }
+}

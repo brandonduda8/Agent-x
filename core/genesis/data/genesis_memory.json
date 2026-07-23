@@ -1,0 +1,50 @@
+{
+  "memories": [
+    {
+      "id": "memory_d9610af8",
+      "category": "revenue",
+      "agent": "Genesis Market Research Agent",
+      "objective": "Find first $10k opportunity",
+      "result": "AI automation service for SMB businesses",
+      "score": 95,
+      "timestamp": 1784572388.9775078
+    },
+    {
+      "id": "memory_ad4e4aab",
+      "category": "revenue",
+      "agent": "Genesis Market Research Agent",
+      "objective": "Find AI automation opportunities",
+      "result": "Local businesses need AI receptionist systems",
+      "score": 90,
+      "timestamp": 1784574014.3670485
+    },
+    {
+      "id": "memory_07b15586",
+      "category": "revenue",
+      "agent": "Genesis Outreach Agent",
+      "objective": "Acquire customers",
+      "result": "Target HVAC and dental businesses",
+      "score": 90,
+      "timestamp": 1784574014.3675911
+    },
+    {
+      "id": "memory_c40adc67",
+      "category": "revenue",
+      "agent": "Genesis Market Research Agent",
+      "objective": "Find AI automation opportunities",
+      "result": "Local businesses need AI receptionist systems",
+      "score": 90,
+      "timestamp": 1784574139.1977894
+    },
+    {
+      "id": "memory_905062b8",
+      "category": "revenue",
+      "agent": "Genesis Outreach Agent",
+      "objective": "Acquire customers",
+      "result": "Target HVAC and dental businesses",
+      "score": 90,
+      "timestamp": 1784574139.1988611
+    }
+  ],
+  "created": 1784572388.9769516
+}

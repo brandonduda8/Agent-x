@@ -1,15 +1,63 @@
 import time
 import uuid
+import json
+import os
 
 
 class GenesisAgentRegistry:
 
     def __init__(self):
 
-        self.system = "GENESIS AGENT REGISTRY v1"
+        self.system = "GENESIS PERSISTENT AGENT REGISTRY v3"
+
+        self.file = "data/genesis_agents_registry.json"
 
         self.agents = {}
 
+        self.load()
+
+
+    def load(self):
+
+        if os.path.exists(self.file):
+
+            try:
+
+                with open(self.file,"r") as f:
+
+                    data=json.load(f)
+
+                    self.agents=data.get(
+                        "agents",
+                        {}
+                    )
+
+            except Exception:
+
+                self.agents={}
+
+
+
+    def save(self):
+
+        os.makedirs(
+            "data",
+            exist_ok=True
+        )
+
+        with open(
+            self.file,
+            "w"
+        ) as f:
+
+            json.dump(
+                {
+                    "agents":self.agents,
+                    "updated":time.time()
+                },
+                f,
+                indent=4
+            )
 
 
     def register(
@@ -17,34 +65,42 @@ class GenesisAgentRegistry:
         name,
         role,
         skills,
-        interface="LOCAL"
+        interface="GENESIS"
     ):
 
-        agent_id = "agent_" + uuid.uuid4().hex[:8]
+        agent_id="agent_"+uuid.uuid4().hex[:8]
 
-        agent = {
 
-            "id": agent_id,
+        agent={
 
-            "name": name,
+            "id":agent_id,
 
-            "role": role,
+            "name":name,
 
-            "skills": skills,
+            "role":role,
 
-            "interface": interface,
+            "skills":skills,
 
-            "status": "ONLINE",
+            "interface":interface,
 
-            "created": time.time()
+            "status":"ONLINE",
+
+            "available":True,
+
+            "created":time.time()
 
         }
 
 
-        self.agents[name] = agent
+        self.agents[name]=agent
 
 
-        print(f"🧬 Agent registered: {name}")
+        self.save()
+
+
+        print(
+            f"🧬 Persistent Agent Registered: {name}"
+        )
 
 
         return agent
@@ -59,7 +115,26 @@ class GenesisAgentRegistry:
 
     def list_agents(self):
 
-        return list(self.agents.values())
+        return list(
+            self.agents.values()
+        )
+
+
+
+    def find_by_skill(
+        self,
+        skill
+    ):
+
+        return [
+
+            agent
+
+            for agent in self.agents.values()
+
+            if skill in agent["skills"]
+
+        ]
 
 
 
@@ -67,13 +142,13 @@ class GenesisAgentRegistry:
 
         return {
 
-            "system": self.system,
+            "system":self.system,
 
-            "agents": len(self.agents),
+            "agents":len(self.agents),
 
-            "registry": self.agents,
+            "registry":self.agents,
 
-            "timestamp": time.time()
+            "timestamp":time.time()
 
         }
 

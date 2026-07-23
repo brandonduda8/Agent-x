@@ -17,11 +17,11 @@ from core.genesis.workforce_orchestrator import (
 class GenesisExecutiveMissionOrchestrator:
 
     def __init__(self):
-
-        self.system = "GENESIS EXECUTIVE MISSION ORCHESTRATOR v2"
+        self.system = (
+            "GENESIS EXECUTIVE MISSION ORCHESTRATOR v3"
+        )
 
         self.missions = []
-
 
 
     def register_workforce_agents(
@@ -40,7 +40,6 @@ class GenesisExecutiveMissionOrchestrator:
             )
 
 
-
     def get_available_skills(self):
 
         skills = []
@@ -51,10 +50,41 @@ class GenesisExecutiveMissionOrchestrator:
                 agent["skills"]
             )
 
-        return list(
-            set(skills)
-        )
+        return list(set(skills))
 
+
+    def normalize_team(self, team):
+
+        normalized = []
+
+        for member in team:
+
+            if isinstance(member, str):
+
+                normalized.append(
+                    {
+                        "agent": member,
+                        "matched_skills": []
+                    }
+                )
+
+            elif isinstance(member, dict):
+
+                if "agent" in member:
+                    normalized.append(member)
+
+                elif "name" in member:
+                    normalized.append(
+                        {
+                            "agent": member["name"],
+                            "matched_skills": member.get(
+                                "skills",
+                                []
+                            )
+                        }
+                    )
+
+        return normalized
 
 
     def create_mission(
@@ -67,18 +97,24 @@ class GenesisExecutiveMissionOrchestrator:
         )
 
 
-        plan = mission_intelligence_router.route(
-            objective
+        plan = (
+            mission_intelligence_router.route(
+                objective
+            )
         )
 
 
-        available_skills = self.get_available_skills()
+        available_skills = (
+            self.get_available_skills()
+        )
 
 
-        workforce = workforce_orchestrator.create_workforce(
-            plan["id"],
-            plan["required_capabilities"],
-            available_skills
+        workforce = (
+            workforce_orchestrator.create_workforce(
+                plan["id"],
+                plan["required_capabilities"],
+                available_skills
+            )
         )
 
 
@@ -87,16 +123,43 @@ class GenesisExecutiveMissionOrchestrator:
         )
 
 
-        team = agent_matching_engine.match(
-            plan
+        raw_team = (
+            agent_matching_engine.match(
+                plan
+            )
         )
+
+
+        if isinstance(raw_team, dict):
+
+            team = raw_team.get(
+                "team",
+                []
+            )
+
+        else:
+
+            team = raw_team
+
+
+        team = self.normalize_team(
+            team
+        )
+
+
+        plan["team"] = team
+
+        plan["assigned_agents"] = [
+            x["agent"]
+            for x in team
+        ]
 
 
         mission = {
 
             "id":
-                "executive_mission_" +
-                uuid.uuid4().hex[:8],
+                "executive_mission_"
+                + uuid.uuid4().hex[:8],
 
             "objective":
                 objective,
@@ -115,6 +178,7 @@ class GenesisExecutiveMissionOrchestrator:
 
             "created":
                 time.time()
+
         }
 
 
@@ -144,8 +208,11 @@ class GenesisExecutiveMissionOrchestrator:
 
             "timestamp":
                 time.time()
+
         }
 
 
 
-executive_mission_orchestrator = GenesisExecutiveMissionOrchestrator()
+executive_mission_orchestrator = (
+    GenesisExecutiveMissionOrchestrator()
+)

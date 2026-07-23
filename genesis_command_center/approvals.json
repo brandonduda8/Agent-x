@@ -1,0 +1,12 @@
+{
+    "requests": [
+        {
+            "id": 1,
+            "agent": "Revenue Agent",
+            "action": "Contact potential business client",
+            "impact": "Possible new revenue opportunity",
+            "status": "APPROVED",
+            "created": "2026-07-23 15:03:22.450857"
+        }
+    ]
+}

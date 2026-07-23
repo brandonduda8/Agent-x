@@ -1,88 +1,81 @@
 import time
-import uuid
 
 
 class GenesisWorkerRegistry:
 
     def __init__(self):
-
-        self.system = "GENESIS WORKER REGISTRY v1"
-
-        self.workers = {}
+        self.system = "GENESIS WORKER REGISTRY v2.2"
+        self.workers = []
 
 
-    def register_worker(
-        self,
-        name,
-        role,
-        skills
-    ):
+    def register(self, worker):
 
-        worker = {
+        if isinstance(worker, dict):
 
-            "id":
-            "worker_" + uuid.uuid4().hex[:8],
+            record = {
+                "id": worker.get("id"),
+                "name": worker.get("name", "Unknown Worker"),
+                "capability": worker.get("role", "unknown"),
+                "skills": worker.get("skills", []),
+                "missions": 0,
+                "performance": 100,
+                "status": "ONLINE",
+                "worker_object": worker,
+                "created": time.time()
+            }
 
-            "name":
-            name,
+        else:
 
-            "role":
-            role,
-
-            "skills":
-            skills,
-
-            "status":
-            "ONLINE",
-
-            "created":
-            time.time()
-
-        }
+            record = {
+                "id": getattr(worker, "id", None),
+                "name": getattr(worker, "name", "Unknown Worker"),
+                "capability": getattr(worker, "capability", "unknown"),
+                "skills": getattr(worker, "skills", []),
+                "missions": 0,
+                "performance": 100,
+                "status": "ONLINE",
+                "worker_object": worker,
+                "created": time.time()
+            }
 
 
-        self.workers[name] = worker
-
+        self.workers.append(record)
 
         print(
-            f"⚙️ Worker registered: {name}"
+            "🧬 Worker Registered:",
+            record["name"]
         )
 
-
-        return worker
-
+        return record
 
 
-    def get_worker(self, name):
+    def get_online_workers(self):
 
-        return self.workers.get(name)
-
-
-
-    def list_workers(self):
-
-        return list(
-            self.workers.values()
-        )
-
+        return [
+            worker
+            for worker in self.workers
+            if worker["status"] == "ONLINE"
+        ]
 
 
     def report(self):
 
         return {
-
-            "system":
-            self.system,
-
-            "workers":
-            len(self.workers),
-
-            "registry":
-            self.workers,
-
-            "timestamp":
-            time.time()
-
+            "system": self.system,
+            "workers": [
+                {
+                    "id": worker["id"],
+                    "name": worker["name"],
+                    "capability": worker["capability"],
+                    "skills": worker["skills"],
+                    "missions": worker["missions"],
+                    "performance": worker["performance"],
+                    "status": worker["status"]
+                }
+                for worker in self.workers
+            ],
+            "count": len(self.workers),
+            "timestamp": time.time()
         }
 
 

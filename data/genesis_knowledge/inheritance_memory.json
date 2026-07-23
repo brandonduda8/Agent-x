@@ -1,0 +1,44 @@
+[
+  {
+    "id": "inheritance_4c6fb43c",
+    "agent": "Genesis Revenue Agent",
+    "knowledge_access": [
+      "stem",
+      "computer_science",
+      "engineering",
+      "mathematics",
+      "artificial_intelligence",
+      "automation"
+    ],
+    "status": "CONNECTED",
+    "timestamp": 1784685376.4543514
+  },
+  {
+    "id": "inheritance_c18b78bc",
+    "agent": "Genesis Robotics Engineer Agent",
+    "knowledge_access": [
+      "stem",
+      "computer_science",
+      "engineering",
+      "mathematics",
+      "artificial_intelligence",
+      "automation"
+    ],
+    "status": "CONNECTED",
+    "timestamp": 1784685376.4547684
+  },
+  {
+    "id": "inheritance_3f510b30",
+    "agent": "Genesis Autonomous Research Agent",
+    "knowledge_access": [
+      "stem",
+      "computer_science",
+      "engineering",
+      "mathematics",
+      "artificial_intelligence",
+      "automation"
+    ],
+    "status": "CONNECTED",
+    "timestamp": 1784685376.4551358
+  }
+]

@@ -4,59 +4,99 @@ import uuid
 
 class GenesisRevenueExecutionBridge:
 
+    """
+    GENESIS REVENUE EXECUTION BRIDGE v1
+
+    Converts verified opportunities
+    into actionable revenue tasks.
+
+    Responsibilities:
+
+    - analyze opportunities
+    - select execution path
+    - create execution plans
+    - track revenue actions
+    """
+
     def __init__(self):
 
-        self.system = "GENESIS REVENUE EXECUTION BRIDGE v1"
-
-        self.events = []
-
-
-    def process_task_result(
-        self,
-        result
-    ):
-
-        capability = result.get(
-            "capability",
-            ""
+        self.system = (
+            "GENESIS REVENUE EXECUTION BRIDGE v1"
         )
 
-        event_type = "OPERATIONS_COMPLETED"
-
-        value = 0
+        self.executions = []
 
 
-        if capability in [
-            "sales",
-            "lead_generation",
-            "crm"
+
+    def determine_action(
+        self,
+        opportunity
+    ):
+
+        category = (
+            opportunity.get(
+                "category",
+                ""
+            )
+            .upper()
+        )
+
+
+        if category == "JOB":
+
+            return "APPLICATION_EXECUTION"
+
+
+        if category in [
+            "CLIENT",
+            "BUSINESS",
+            "LEAD"
         ]:
 
-            event_type = "REVENUE_ACTION_COMPLETED"
-
-            value = 1000
+            return "SALES_EXECUTION"
 
 
-        event = {
+        if category == "FREELANCE":
+
+            return "PROPOSAL_EXECUTION"
+
+
+        return "REVIEW"
+
+
+
+    def create_execution(
+        self,
+        opportunity
+    ):
+
+        action = (
+            self.determine_action(
+                opportunity
+            )
+        )
+
+
+        execution = {
 
             "id":
-                "revenue_event_"
-                + uuid.uuid4().hex[:8],
+                "revenue_execution_"
+                +
+                uuid.uuid4().hex[:8],
 
-            "event":
-                event_type,
+            "opportunity":
+                opportunity,
 
-            "agent":
-                result.get("agent"),
+            "action":
+                action,
 
-            "capability":
-                capability,
-
-            "value":
-                value,
+            "steps":
+                self.create_steps(
+                    action
+                ),
 
             "status":
-                "RECORDED",
+                "READY",
 
             "created":
                 time.time()
@@ -64,56 +104,69 @@ class GenesisRevenueExecutionBridge:
         }
 
 
-        self.events.append(
-            event
+        self.executions.append(
+            execution
         )
 
 
         print(
-            f"💰 Revenue event created: {event_type}"
+            "🚀 Revenue execution created:",
+            opportunity.get(
+                "title"
+            )
         )
 
 
-        return event
+        return execution
 
 
 
-    def process_execution(
+    def create_steps(
         self,
-        execution
+        action
     ):
 
-        events = []
+
+        plans = {
+
+            "APPLICATION_EXECUTION":
+                [
+                    "Analyze job requirements",
+                    "Generate customized resume",
+                    "Create application message",
+                    "Submit application",
+                    "Track response"
+                ],
 
 
-        for result in execution.get(
-            "results",
-            []
-        ):
-
-            events.append(
-                self.process_task_result(
-                    result
-                )
-            )
+            "SALES_EXECUTION":
+                [
+                    "Analyze business problem",
+                    "Create automation offer",
+                    "Prepare outreach",
+                    "Contact prospect",
+                    "Track follow-up"
+                ],
 
 
-        return {
-
-            "id":
-                "bridge_run_"
-                + uuid.uuid4().hex[:8],
-
-            "events":
-                events,
-
-            "status":
-                "COMPLETE",
-
-            "timestamp":
-                time.time()
+            "PROPOSAL_EXECUTION":
+                [
+                    "Analyze project",
+                    "Generate proposal",
+                    "Prepare pricing",
+                    "Submit proposal",
+                    "Track response"
+                ]
 
         }
+
+
+        return plans.get(
+            action,
+            [
+                "Review opportunity"
+            ]
+        )
 
 
 
@@ -124,8 +177,10 @@ class GenesisRevenueExecutionBridge:
             "system":
                 self.system,
 
-            "events":
-                len(self.events),
+            "executions":
+                len(
+                    self.executions
+                ),
 
             "timestamp":
                 time.time()
@@ -134,4 +189,6 @@ class GenesisRevenueExecutionBridge:
 
 
 
-revenue_execution_bridge = GenesisRevenueExecutionBridge()
+genesis_revenue_execution_bridge = (
+    GenesisRevenueExecutionBridge()
+)

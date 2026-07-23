@@ -1,0 +1,19 @@
+{
+    "leads": [
+        {
+            "id": 1,
+            "name": "Example Contact",
+            "company": "Example Company",
+            "estimated_value": "$1000-$5000",
+            "status": "NEW",
+            "last_action": "Created",
+            "created": "2026-07-23 15:28:20.660983"
+        }
+    ],
+    "metrics": {
+        "total_leads": 1,
+        "contacts_sent": 0,
+        "responses": 0,
+        "opportunities": 0
+    }
+}

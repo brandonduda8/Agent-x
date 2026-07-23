@@ -1,176 +1,132 @@
 import time
-import traceback
-
-from core.genesis.memory_engine import memory_engine
-from core.genesis.recovery_engine import recovery_engine
-from core.genesis.learning_engine import learning_engine
-from core.event_bus import bus
+import uuid
 
 
 class GenesisExecutionEngine:
 
-
     def __init__(self):
 
-        self.name = "GENESIS EXECUTION ENGINE v1.1"
+        self.name = (
+            "GENESIS EXECUTION ENGINE v2"
+        )
 
-        self.history = []
+        self.executions = []
 
 
+    def execute(
+        self,
+        mission
+    ):
 
-    async def execute(self, mission):
+        """
+        Compatibility layer.
+
+        Allows Genesis autonomous loop
+        to call execute()
+        while preserving execute_task()
+        """
+
+        return self.execute_task(
+            mission
+        )
+
+
+    def execute_task(
+        self,
+        task
+    ):
 
         print(
-            f"⚡ [GENESIS] Executing mission: {mission['objective']}"
+            "⚡ Executing task:",
+            task["objective"]
         )
 
 
-        results = []
-
-        failures = []
-
-
-
-        for agent in mission["assigned_agents"]:
-
-
-            try:
-
-                event = {
-
-                    "id":
-                        f"genesis_{int(time.time())}",
-
-                    "source":
-                        "genesis",
-
-                    "target":
-                        agent,
-
-                    "type":
-                        "task",
-
-                    "payload":
-                    {
-
-                        "objective":
-                            mission["objective"]
-
-                    }
-
-                }
-
-
-                print(
-                    f"🧬 Dispatching to {agent}"
-                )
-
-
-                await bus.publish(event)
-
-
-                results.append(agent)
-
-
-                learning_engine.analyze_success(
-
-                    agent,
-
-                    mission["objective"],
-
-                    "Task dispatched successfully"
-
-                )
-
-
-
-            except Exception as e:
-
-
-                error = str(e)
-
-
-                print(
-                    f"⚠️ Agent failure: {agent} -> {error}"
-                )
-
-
-                recovery = recovery_engine.analyze(
-
-                    agent,
-
-                    error
-
-                )
-
-
-                learning_engine.analyze_failure(
-
-                    agent,
-
-                    mission["objective"],
-
-                    error
-
-                )
-
-
-                failures.append(recovery)
-
-
-
-        mission["status"] = (
-
-            "COMPLETED"
-
-            if not failures
-
-            else
-
-            "RECOVERY_REQUIRED"
-
+        from core.genesis.worker_runtime import (
+            worker_runtime
         )
 
 
-        mission["executed_agents"] = results
+        execution = {
+
+            "id":
+                "execution_" +
+                uuid.uuid4().hex[:8],
+
+            "task":
+                task.get(
+                    "id",
+                    "unknown"
+                ),
+
+            "objective":
+                task["objective"],
+
+            "agents":
+                task.get(
+                    "assigned_agents",
+                    []
+                ),
+
+            "results":
+                [],
+
+            "status":
+                "RUNNING",
+
+            "started":
+                time.time()
+
+        }
 
 
-        mission["failures"] = failures
+        execution["results"] = (
+            worker_runtime.run_team(
+                task.get(
+                    "assigned_agents",
+                    []
+                ),
 
-
-        self.history.append(mission)
-
-
-
-        memory_engine.remember_event(
-
-            {
-
-                "type":
-                    "mission_complete",
-
-                "mission":
-                    mission
-
-            }
-
+                task["objective"]
+            )
         )
 
 
-        return mission
+        execution["status"] = (
+            "COMPLETE"
+        )
+
+
+        execution["completed"] = (
+            time.time()
+        )
+
+
+        self.executions.append(
+            execution
+        )
+
+
+        print(
+            "✅ Real Worker Execution Complete"
+        )
+
+
+        return execution
 
 
 
-
-    def status(self):
+    def report(self):
 
         return {
 
-            "engine":
+            "system":
                 self.name,
 
-            "missions":
-                len(self.history),
+            "executions":
+                len(
+                    self.executions
+                ),
 
             "timestamp":
                 time.time()

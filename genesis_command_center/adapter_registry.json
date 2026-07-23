@@ -1,0 +1,16 @@
+{
+    "system": "GENESIS ADAPTER REGISTRY",
+    "adapters": [
+        {
+            "name": "Phone Adapter",
+            "category": "device",
+            "endpoint": "android-termux",
+            "permissions": [
+                "notifications",
+                "commands"
+            ],
+            "status": "ONLINE",
+            "connected": "2026-07-23 15:33:24.769724"
+        }
+    ]
+}
