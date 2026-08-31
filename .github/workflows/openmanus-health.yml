@@ -1,0 +1,15 @@
+name: OpenManus Health Check
+on: [workflow_dispatch]
+jobs:
+  openmanus-health:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    - name: Install OpenManus
+      run: pip install --no-cache-dir openmanus
+    - name: Health check
+      run: python -c "import openmanus; print('HEALTH=PASS')"
